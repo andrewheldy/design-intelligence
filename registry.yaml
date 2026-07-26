@@ -3,6 +3,12 @@
 # Statuses: candidate | approved | experimental | rejected | license-review
 # Ratings: 1-5, our judgment of usefulness for design work across ventures.
 # Full evaluation rationale lives in evaluations/.
+#
+# Licensing note: this file's own text (schema, descriptions, ratings, notes)
+# is covered by this repository's MIT LICENSE. Listing a source here does not
+# relicense it — each entry's `license` field names that source's own license,
+# read from its LICENSE file, and that license governs the source unchanged.
+# See "Licensing and attribution rules" in README.md and LICENSE (Scope).
 
 version: 1
 updated: "2026-07-26"

@@ -24,6 +24,8 @@ Three systems, three non-overlapping responsibilities. Duplication across the bo
 - Implementation-oriented design guidance that generalizes across ventures
 - This contract and the consumer template
 
+This repository's own content above is [MIT licensed](../LICENSE). That covers our text and code only — it is a separate thing from the licenses of the sources `registry.yaml` describes, which are unaffected (see §12).
+
 Design Intelligence **MUST NOT** contain: venture strategy, portfolio priorities, founder preferences, product roadmaps, per-project brand tokens, screenshots of project UI, or any project's implementation code.
 
 ### An individual project repository owns
@@ -222,6 +224,12 @@ Hard licensing rules that consumers inherit unchanged:
 - MIT-licensed distillations of third parties' teaching (e.g. `design-motion-principles`) are **link or install only, never vendored** — the distiller's license cannot launder the derivation.
 - Freemium sources (`ui-ux-pro-max`) are used within their open tier only.
 - Any vendored copy anywhere keeps the upstream LICENSE, a `SOURCE` note (URL + commit), and the creator's name.
+
+**This repository's own license does not touch any of the above.** This repository's original content — `registry.yaml`, the agent specs, this contract, and everything else authored here — is [MIT licensed](../LICENSE). That license:
+
+- **MUST NOT** be read as relicensing any external repository, skill, specification, or source described in `registry.yaml`. Each keeps its own license exactly as recorded in its entry.
+- **MUST NOT** be treated as extending to a runtime artifact installed in a consumer project (`.claude/agents/` copies, `npx skills add` installs, plugin-marketplace installs) — those remain governed by their own upstream license, per §11's exception.
+- **MUST NOT** be cited to override, narrow, or waive any provenance requirement, attribution requirement, source-available restriction, or vendoring restriction recorded in `registry.yaml` or above. This repository being MIT licensed changes nothing about what may be vendored, installed, or redistributed from any registered source.
 
 ---
 
