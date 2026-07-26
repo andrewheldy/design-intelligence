@@ -5,3 +5,7 @@
 - `experimental/` — trial-stage skills (internal drafts or vendored trials). Anything here is excluded from default agent loading.
 
 No skill lands in any of these folders without a registry entry.
+
+## Licensing
+
+`internal/` skills we author are our own content, covered by this repository's [MIT LICENSE](../LICENSE). `external/` (vendored) and `experimental/` skills that originated upstream are **not** relicensed by living in this repository — each keeps its own upstream `LICENSE` and `SOURCE` note, and stays subject to whatever restriction its registry entry records (freemium tier limits, no-vendor rules, source-available exclusions). This repository's license does not override those restrictions.

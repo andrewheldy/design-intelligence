@@ -1,0 +1,227 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/andrewheldy/design-intelligence/schemas/project-consumer.schema.json",
+  "title": "Design Intelligence project connection record",
+  "description": "Optional machine-readable form of a consumer project's docs/DESIGN_INTELLIGENCE.md. The Markdown record is the contract (see docs/INTEGRATION_CONTRACT.md §3); this schema exists for tooling and for the HeldyOS bridge. Records live in the CONSUMER repository, never here.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "project_id",
+    "project_name",
+    "repository_url",
+    "status",
+    "product_type",
+    "canonical_design_intelligence_url",
+    "canonical_ref",
+    "integration_doc",
+    "brand_system_path",
+    "design_decision_log_path",
+    "applicable_agents",
+    "last_reviewed",
+    "owner"
+  ],
+  "properties": {
+    "project_id": {
+      "type": "string",
+      "description": "Stable slug for the project. Must match the project_id used in the HeldyOS adoption note.",
+      "pattern": "^[a-z0-9][a-z0-9-]{1,62}[a-z0-9]$"
+    },
+    "project_name": {
+      "type": "string",
+      "description": "Human-readable project name.",
+      "minLength": 1
+    },
+    "repository_url": {
+      "type": "string",
+      "format": "uri",
+      "description": "Canonical URL of the consumer project repository.",
+      "pattern": "^https://"
+    },
+    "status": {
+      "type": "string",
+      "description": "Integration status of this project with Design Intelligence. Distinct from a registry entry's status.",
+      "enum": ["planned", "active", "paused", "archived"]
+    },
+    "product_type": {
+      "type": "string",
+      "description": "Surface class. Drives the one-opinion-skill selection in AGENTS.md rule 3. 'mixed' must be resolved to a single surface type per task by the Design Director.",
+      "enum": ["marketing", "product-ui", "mixed", "mobile-app", "internal-tool"]
+    },
+    "canonical_design_intelligence_url": {
+      "type": "string",
+      "format": "uri",
+      "description": "The canonical Design Intelligence repository. Recorded explicitly so a consumer never guesses.",
+      "const": "https://github.com/andrewheldy/design-intelligence"
+    },
+    "canonical_ref": {
+      "type": "object",
+      "description": "The pinned ref of the canonical repository this project was last reviewed against. 'main' is not a ref for review purposes (contract §8).",
+      "additionalProperties": false,
+      "required": ["kind", "value"],
+      "properties": {
+        "kind": {
+          "type": "string",
+          "enum": ["commit", "tag", "registry-version"],
+          "description": "commit = full 40-char SHA (preferred); tag = release tag; registry-version = registry.yaml 'version' plus 'updated'."
+        },
+        "value": {
+          "type": "string",
+          "minLength": 1,
+          "description": "e.g. 'b2506368e5b0d52c09fb24ccf870db06d2b9d38a', 'v1.0.0', or '1 (2026-07-26)'."
+        }
+      },
+      "allOf": [
+        {
+          "if": { "properties": { "kind": { "const": "commit" } }, "required": ["kind"] },
+          "then": { "properties": { "value": { "pattern": "^[0-9a-f]{40}$" } } }
+        }
+      ]
+    },
+    "integration_doc": {
+      "type": "string",
+      "description": "Repo-relative path to this project's filled-in connection record.",
+      "pattern": "^[^/].*\\.md$",
+      "default": "docs/DESIGN_INTELLIGENCE.md"
+    },
+    "brand_system_path": {
+      "type": "string",
+      "description": "Repo-relative path to the project's brand system as implemented (tokens, type roles, palette, motion language).",
+      "pattern": "^[^/].+$"
+    },
+    "design_decision_log_path": {
+      "type": "string",
+      "description": "Repo-relative path to the dated log of accepted and rejected design decisions (contract §10).",
+      "pattern": "^[^/].+$"
+    },
+    "reusable_findings_path": {
+      "type": "string",
+      "description": "Repo-relative path to the staging file for lessons proposed back to Design Intelligence (contract §9).",
+      "pattern": "^[^/].+$"
+    },
+    "applicable_agents": {
+      "type": "array",
+      "description": "Design Intelligence agent specs this project runs. Referenced by id; the specs themselves are never copied here (contract §11).",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "enum": [
+          "design-director",
+          "design-engineer",
+          "accessibility-reviewer",
+          "anti-slop-reviewer",
+          "motion-reviewer",
+          "mobile-ux-reviewer"
+        ]
+      }
+    },
+    "applicable_registry_entries": {
+      "type": "array",
+      "description": "Registry entry ids that apply to this project. Each value MUST match an 'id' in registry.yaml at canonical_ref. Kept as a pattern rather than an enum so the schema does not go stale when the registry changes.",
+      "uniqueItems": true,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id"],
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^[a-z0-9][a-z0-9-]*$",
+            "description": "Registry entry id, e.g. 'emil-design-skills'."
+          },
+          "status_at_review": {
+            "type": "string",
+            "description": "Snapshot of the entry's status at canonical_ref. Informational; registry.yaml is authoritative.",
+            "enum": ["candidate", "approved", "experimental", "rejected", "license-review"]
+          },
+          "why": {
+            "type": "string",
+            "description": "Why this entry applies to this project."
+          }
+        }
+      }
+    },
+    "exceptions": {
+      "type": "array",
+      "description": "Standing overrides and permanently rejected recommendations (contract §10). Accessibility failures MUST NOT be recorded here; they are open defects with remediation dates.",
+      "uniqueItems": true,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "rule", "reason", "status"],
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]*$",
+            "description": "Stable id, e.g. 'EX-1'."
+          },
+          "rule": {
+            "type": "string",
+            "description": "The directive or recommendation being overridden."
+          },
+          "source": {
+            "type": "string",
+            "description": "Registry entry id or agent id the directive came from."
+          },
+          "scope": {
+            "type": "string",
+            "description": "Where the exception applies.",
+            "enum": ["project", "surface", "component"]
+          },
+          "reason": {
+            "type": "string",
+            "description": "Why the project overrides it. 'Brand mandates X' is a reason; 'we prefer it' is not."
+          },
+          "approved_by": {
+            "type": "string",
+            "description": "Person who approved the exception."
+          },
+          "expires": {
+            "type": ["string", "null"],
+            "description": "Review date (YYYY-MM-DD), or null for a permanent brand rule. An exception with no expiry becomes silent policy.",
+            "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+          },
+          "status": {
+            "type": "string",
+            "enum": ["active", "expired", "revoked"]
+          }
+        }
+      }
+    },
+    "last_reviewed": {
+      "type": "string",
+      "format": "date",
+      "description": "Date a human last re-read the canonical repository for this project (YYYY-MM-DD).",
+      "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+    },
+    "owner": {
+      "type": "string",
+      "description": "Person accountable for design decisions in this project.",
+      "minLength": 1
+    },
+    "obsidian_note": {
+      "type": "object",
+      "description": "Optional pointer to the HeldyOS adoption note. There is no automatic connection to Obsidian (see docs/HELDYOS_BRIDGE.md §1).",
+      "additionalProperties": false,
+      "required": ["note_type", "path"],
+      "properties": {
+        "note_type": {
+          "type": "string",
+          "enum": [
+            "design-intelligence-hub",
+            "design-intelligence-adoption",
+            "design-evaluation",
+            "design-decision",
+            "reusable-pattern-candidate",
+            "internal-skill-candidate"
+          ]
+        },
+        "path": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Vault-relative path to the note."
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,85 @@
+# EXAMPLE ONLY — NOT AUTHORITATIVE PROJECT DATA
+#
+# This is an illustrative connection record for "The Feed", written to show the
+# shape of a filled-in record and to exercise every field in
+# schemas/project-consumer.schema.json. The values below are invented for
+# illustration: the repository URL, paths, owner, dates, exception, and Obsidian
+# note may not exist. Do not treat any of it as the current state of The Feed.
+#
+# The authoritative record for a project is that project's own
+# docs/DESIGN_INTELLIGENCE.md, in that project's repository — not this file.
+#
+# Schema: ../schemas/project-consumer.schema.json (JSON Schema draft 2020-12).
+# The machine-readable record is optional; the Markdown record is the contract.
+
+project_id: the-feed
+project_name: The Feed
+repository_url: https://github.com/andrewheldy/the-feed
+status: active
+product_type: product-ui
+
+canonical_design_intelligence_url: https://github.com/andrewheldy/design-intelligence
+canonical_ref:
+  kind: commit
+  value: b2506368e5b0d52c09fb24ccf870db06d2b9d38a
+
+integration_doc: docs/DESIGN_INTELLIGENCE.md
+brand_system_path: docs/brand/README.md
+design_decision_log_path: docs/design-decisions.md
+reusable_findings_path: docs/design-findings.md
+
+applicable_agents:
+  - design-director
+  - design-engineer
+  - accessibility-reviewer
+  - anti-slop-reviewer
+  - motion-reviewer
+  - mobile-ux-reviewer
+
+# Registry ids only — the entries themselves are never copied into a consumer
+# repository (INTEGRATION_CONTRACT.md §11). status_at_review is a snapshot;
+# registry.yaml at canonical_ref is authoritative.
+applicable_registry_entries:
+  - id: anthropic-skills
+    status_at_review: approved
+    why: >
+      frontend-design is the opinion skill for this product UI. taste-skill is
+      deliberately absent — one opinion skill per task, and this is not a
+      marketing surface.
+  - id: emil-design-skills
+    status_at_review: approved
+    why: >
+      Motion authority for feed transitions and the submission sheet. Composes
+      with the opinion skill; it is not itself an opinion skill.
+  - id: a11y-specialist-skills
+    status_at_review: approved
+    why: Backs the Accessibility Reviewer; WCAG 2.2 AA is a hard requirement here.
+  - id: oneredoak-design-review
+    status_at_review: approved
+    why: >
+      Referenced as the source pattern behind the reviewer agents. Adapted
+      internally in agents/ — nothing is installed from it.
+
+exceptions:
+  - id: EX-1
+    rule: >
+      Emil's guidance to avoid animating high-frequency interactions is relaxed
+      for the feed item "saved" toggle, which animates at 120ms.
+    source: emil-design-skills
+    scope: component
+    reason: >
+      The toggle is the product's core feedback moment; without motion users
+      re-tap because they cannot tell whether it registered. Capped at 120ms,
+      transform/opacity only, fully suppressed under prefers-reduced-motion.
+    approved_by: Andrew Heldy
+    expires: "2027-01-15"
+    status: active
+
+last_reviewed: "2026-07-26"
+owner: Andrew Heldy
+
+# Optional. There is no automatic connection to Obsidian — this is a pointer a
+# human maintains (HELDYOS_BRIDGE.md §1).
+obsidian_note:
+  note_type: design-intelligence-adoption
+  path: HeldyOS/Design Intelligence/Adoption/The Feed.md

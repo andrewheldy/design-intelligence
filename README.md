@@ -4,6 +4,8 @@ A curated, executable library of verified design skills, design-engineering agen
 
 **This is not a bookmark dump.** Every entry in [`registry.yaml`](registry.yaml) was verified against its live source — repository inspected, license read from the LICENSE file, SKILL.md contents reviewed — before earning a status. Quality over quantity, deliberately small.
 
+This repository's own original content — `registry.yaml`, the specs in `agents/`, the docs in `docs/`, and everything else authored here — is [MIT licensed](LICENSE). That license covers our words and our code; it does not extend to, and does not relicense, any external repository, skill, or source this repository describes or links to. See [`LICENSE`](LICENSE) and "Licensing and attribution rules" below.
+
 ## How the repository works
 
 ```
@@ -19,6 +21,9 @@ agents/              Internal agent specifications (reviewers, design roles).
 references/          Verified creators, canonical repos, and principle notes.
 evaluations/         One file per evaluation round + the evaluation template.
 scripts/             install.sh — assisted install for verified sources only.
+docs/                Integration contract, consumer template, HeldyOS bridge.
+schemas/             JSON Schema for a project's connection record.
+examples/            Illustrative (non-authoritative) filled-in records.
 ```
 
 The **registry is the product**. Folders hold only what has passed through it.
@@ -59,7 +64,26 @@ candidate → (evaluation) → approved | experimental | rejected | license-revi
 
 See [`AGENTS.md`](AGENTS.md) — it is written to be loaded directly by Claude Code, Codex, Cursor, and Gemini CLI, and defines skill-selection and conflict rules (short version: **one design-opinion skill at a time**).
 
+## How other repositories consume this repo
+
+[`docs/INTEGRATION_CONTRACT.md`](docs/INTEGRATION_CONTRACT.md) is the contract for external project repositories (Rent With Heldy, The Feed, Miami Roots, SideQuests, and so on): ownership boundaries, discovery order, required consumer files, reviewer routing, how findings travel back, and what happens when this repo is unreachable.
+
+A project integrates by copying [`docs/CONSUMER_TEMPLATE.md`](docs/CONSUMER_TEMPLATE.md) to its own `docs/DESIGN_INTELLIGENCE.md` and filling it in — optionally alongside a machine-readable record validating against [`schemas/project-consumer.schema.json`](schemas/project-consumer.schema.json) ([example](examples/project-consumer.example.yaml)).
+
+**Nothing is synchronized.** There is no submodule, package, sync script, or MCP server: consumers pin a commit, read this repository at that ref, and a human bumps the ref on re-review. The link/vendor/fork/submodule table above governs consumers unchanged.
+
+The boundary with strategic memory — what belongs in HeldyOS/Obsidian rather than here — is in [`docs/HELDYOS_BRIDGE.md`](docs/HELDYOS_BRIDGE.md).
+
 ## Licensing and attribution rules
+
+**Repository license vs. registry content.** [`LICENSE`](LICENSE) (MIT) covers this repository's original content only — the registry text, agent specs, docs, schemas, scripts, and evaluations we authored. It is a separate thing from the licenses of the sources the registry *describes*:
+
+- Registering a source in `registry.yaml` — describing it, rating it, recommending an install method — does not relicense that source. Its own license (recorded in the entry's `license` field, from its LICENSE file) governs it, unchanged, forever.
+- Any skill or agent spec installed at runtime into a project — via `npx skills add`, a plugin marketplace, or copied into `.claude/agents/` — remains governed by its upstream license, not by this repository's MIT license.
+- Any future vendored copy under `skills/external/` keeps the upstream LICENSE; MIT here does not spread to it.
+- Source-specific restrictions recorded in `registry.yaml` — freemium tier boundaries, source-available exclusions (Anthropic's document skills), no-vendor rules on third-party distillations — continue to apply in full. This repository's own license does not narrow, waive, or override provenance, attribution, source-available restrictions, or vendoring restrictions on any registered source.
+
+Rules for evaluating and handling those source licenses:
 
 - A source's license comes from its LICENSE file, never from README prose. Unclear → status `license-review`, and it is not installed.
 - Vendored copies keep the upstream LICENSE, a `SOURCE` note (URL + commit), and the creator's name. Attribution is preserved even when licenses don't strictly require it.
