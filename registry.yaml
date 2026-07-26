@@ -1,0 +1,358 @@
+# design-intelligence registry
+# Every entry was verified against its live source on `last_verified`.
+# Statuses: candidate | approved | experimental | rejected | license-review
+# Ratings: 1-5, our judgment of usefulness for design work across ventures.
+# Full evaluation rationale lives in evaluations/.
+
+version: 1
+updated: "2026-07-26"
+
+sources:
+  - id: emil-design-skills
+    name: Skills for Design Engineers
+    type: skill-collection
+    creator: Emil Kowalski
+    canonical_source: https://github.com/emilkowalski/skills
+    repository: https://github.com/emilkowalski/skills
+    description: >
+      Seven first-party skills encoding Emil Kowalski's animation and UI-polish
+      philosophy: emil-design-eng, review-animations, improve-animations,
+      find-animation-opportunities, animation-vocabulary, apple-design,
+      pick-ui-library. Concrete rules (easing bezier values, duration caps,
+      transform-origin, reduced-motion) rather than persona prose.
+    categories: [animation, motion-review, design-engineering, ui-polish]
+    supported_agents: [claude-code, cursor, codex, skill-md-compatible]
+    installation_method: "npx skills@latest add emilkowalski/skills"
+    license: MIT
+    license_notes: LICENSE file verified in repo.
+    status: approved
+    recommended_use: >
+      Default motion authority. Install review-animations and emil-design-eng
+      in any project with meaningful UI motion; use animation-vocabulary when
+      prompting any agent for animation work.
+    conflicts:
+      - Overlaps design-motion-principles (which distills this author's public
+        work); prefer this canonical source.
+      - Strict duration/easing rules may conflict with brand motion languages.
+    last_verified: "2026-07-26"
+    rating: 5
+    evaluation_notes: SKILL.md inspected in full; dense and substantive. See evaluations/2026-07-26-initial-research.md.
+
+  - id: anthropic-skills
+    name: Anthropic Agent Skills (design subset)
+    type: skill-collection
+    creator: Anthropic
+    canonical_source: https://github.com/anthropics/skills
+    repository: https://github.com/anthropics/skills
+    description: >
+      Official Anthropic skills repo. Design-relevant subset: frontend-design
+      (anti-generic design methodology), brand-guidelines, theme-factory,
+      canvas-design, algorithmic-art, web-artifacts-builder, webapp-testing.
+      Also the reference implementation of the SKILL.md format (spec/, template/).
+    categories: [frontend-design, brand, theming, skill-format-reference]
+    supported_agents: [claude-code, claude-api, skill-md-compatible]
+    installation_method: "Claude plugin marketplace, or copy individual skill folders"
+    license: Apache-2.0
+    license_notes: >
+      Apache-2.0 for most skills. Document skills (docx/pdf/pptx/xlsx) are
+      source-available, NOT open source — do not vendor those. Design skills
+      are Apache-2.0; attribution required on redistribution.
+    status: approved
+    recommended_use: >
+      frontend-design as the default product-UI design skill (softer and
+      broader-scoped than taste-skill). spec/ + template/ as the authoring
+      standard for our internal skills.
+    conflicts:
+      - Philosophy overlaps taste-skill; do not run both on the same task.
+    last_verified: "2026-07-26"
+    rating: 5
+    evaluation_notes: frontend-design SKILL.md inspected in full.
+
+  - id: taste-skill
+    name: Taste Skill
+    type: skill-collection
+    creator: Leonxlnx
+    canonical_source: https://www.tasteskill.dev/
+    repository: https://github.com/Leonxlnx/taste-skill
+    description: >
+      "Anti-slop" frontend framework. 13 skills; flagship design-taste-frontend
+      (v2) infers a design read from the brief, sets three dials
+      (DESIGN_VARIANCE, MOTION_INTENSITY, VISUAL_DENSITY), and enforces 100+
+      rules with hard bans on AI tells (em-dashes, three equal feature cards,
+      default Inter, centered hero + purple gradient, div-based fake
+      screenshots) plus a mechanical pre-flight check.
+    categories: [frontend-design, anti-slop, landing-pages, visual-taste]
+    supported_agents: [claude-code, codex, cursor, chatgpt-images]
+    installation_method: 'npx skills add https://github.com/Leonxlnx/taste-skill --skill "design-taste-frontend"'
+    license: MIT
+    license_notes: LICENSE file verified.
+    status: approved
+    recommended_use: >
+      Landing pages, portfolios, marketing surfaces ONLY (its own stated
+      scope). Treat as a preference framework with override gates; overrides
+      must be stated in the brief. Do not use on dashboards or product UI.
+    conflicts:
+      - High conflict with anthropic frontend-design and ui-ux-pro-max —
+        competing sources of typography/palette/layout truth. One at a time.
+      - Absolute bans (fonts, em-dash, centered layouts) can violate brand
+        guidelines; mandatory motion above dial 4 can violate reduced-motion
+        policies. Anti-Slop Reviewer agent must not inherit its bans as law.
+    last_verified: "2026-07-26"
+    rating: 4
+    evaluation_notes: >
+      v2 SKILL.md inspected in full; substantive but aggressive, and v2 is
+      self-labeled experimental by the author.
+
+  - id: oneredoak-design-review
+    name: OneRedOak Design Review Workflow
+    type: workflow
+    creator: OneRedOak (Patrick Ellis)
+    canonical_source: https://github.com/OneRedOak/claude-code-workflows
+    repository: https://github.com/OneRedOak/claude-code-workflows
+    description: >
+      Design-review workflow: a Claude Code subagent drives a live browser via
+      Playwright MCP, reviews UI against Stripe/Airbnb/Linear-tier standards,
+      WCAG AA+, responsive behavior and interaction patterns; runs on PRs or
+      on demand via slash command.
+    categories: [design-review, ui-review, workflow, live-testing]
+    supported_agents: [claude-code]
+    installation_method: "No installer; copy design-review/ agent + command files into project"
+    license: MIT
+    license_notes: LICENSE file verified.
+    status: approved
+    recommended_use: >
+      Source pattern for our reviewer agents (live-browser review loop).
+      Adapted internally in agents/ rather than installed verbatim.
+    conflicts: []
+    last_verified: "2026-07-26"
+    rating: 4
+    evaluation_notes: Repo tree inspected; workflow structure confirmed (code-review/, design-review/, security-review/).
+
+  - id: a11y-specialist-skills
+    name: a11y-specialist-skills
+    type: skill-collection
+    creator: masuP9 (handle only; identity not independently verified)
+    canonical_source: https://github.com/masuP9/a11y-specialist-skills
+    repository: https://github.com/masuP9/a11y-specialist-skills
+    description: >
+      WCAG 2.2 + WAI-ARIA APG accessibility skills: reviewing-a11y,
+      auditing-wcag, planning-wcag-audit, planning-a11y-improvement. Includes
+      automated axe-core/Playwright checks (focus indicators, reflow, text
+      spacing, target size), a four-phase audit process, and npm package
+      @a11y-skills/audit.
+    categories: [accessibility, a11y-review, wcag, audit]
+    supported_agents: [claude-code, codex]
+    installation_method: "Claude Code plugin marketplace, or symlink skill folders"
+    license: MIT
+    license_notes: LICENSE file verified.
+    status: approved
+    recommended_use: >
+      Accessibility review authority; backs the Accessibility Reviewer agent.
+      Low star count (54) is not a quality signal — content is specialist-grade.
+    conflicts: []
+    last_verified: "2026-07-26"
+    rating: 4
+    evaluation_notes: Skill folders and tooling inspected; 138 commits, actively maintained.
+
+  - id: mattpocock-skills
+    name: Matt Pocock Skills
+    type: skill-collection
+    creator: Matt Pocock (Total TypeScript)
+    canonical_source: https://github.com/mattpocock/skills
+    repository: https://github.com/mattpocock/skills
+    description: >
+      Production engineering workflow skills (tdd, triage, to-spec, implement,
+      code-review, domain-modeling, grill-me, writing-great-skills, prototype).
+      Not a design library — included for two specific skills.
+    categories: [engineering-workflow, skill-authoring, prototyping]
+    supported_agents: [claude-code, skill-md-compatible]
+    installation_method: "npx skills@latest add mattpocock/skills (then /setup-matt-pocock-skills)"
+    license: MIT
+    license_notes: LICENSE file verified.
+    status: approved
+    recommended_use: >
+      Registry link only, scoped: writing-great-skills as our skill-authoring
+      reference; prototype for design-exploration (UI variations on one route).
+      Do not import the full collection into design projects.
+    conflicts: []
+    last_verified: "2026-07-26"
+    rating: 4
+    evaluation_notes: Full skill list enumerated; out of design scope except noted skills.
+
+  - id: ui-ux-pro-max
+    name: UI/UX Pro Max
+    type: skill
+    creator: nextlevelbuilder (org; team identity not independently verified)
+    canonical_source: https://github.com/nextlevelbuilder/ui-ux-pro-max-skill
+    repository: https://github.com/nextlevelbuilder/ui-ux-pro-max-skill
+    description: >
+      Retrieval-based design intelligence: CSV databases (192 product types,
+      84 UI styles, 192 palettes, 74 font pairings, 161 reasoning rules,
+      98 UX guidelines, 22 stacks) queried by Python scripts to assemble a
+      design system per product type.
+    categories: [design-system-generation, ui-styles, palettes, typography]
+    supported_agents: [claude-code, cursor, codex-cli, gemini-cli, windsurf, copilot, 13-others]
+    installation_method: "npm i -g ui-ux-pro-max-cli && uipro init --ai claude (or Claude plugin marketplace)"
+    license: MIT
+    license_notes: >
+      MIT covers the open-source Basic tier only; a paid Premium tier exists
+      (freemium). Verify tier boundaries before any vendoring.
+    status: experimental
+    recommended_use: >
+      Trial in an isolated project when a venture needs fast, conventional
+      design-system scaffolding. Not the default: database-driven selection
+      trends templated — the opposite of the taste direction.
+    conflicts:
+      - High conflict with taste-skill and anthropic frontend-design; never
+        active simultaneously.
+    last_verified: "2026-07-26"
+    rating: 3
+    evaluation_notes: >
+      Databases confirmed real by tree inspection; marketing overclaims
+      ("complete design system in seconds"); very large footprint.
+
+  - id: design-motion-principles
+    name: design-motion-principles
+    type: skill
+    creator: kylezantos
+    canonical_source: https://github.com/kylezantos/design-motion-principles
+    repository: https://github.com/kylezantos/design-motion-principles
+    description: >
+      Two-mode motion skill (create/audit) weighting guidance across three
+      lenses distilled from the published work of Emil Kowalski, Jakub Krehel,
+      and Jhey Tompkins; ships audit checklists, anti-checklist, motion
+      cookbook, and HTML audit-report templates with looping CSS demos.
+    categories: [animation, motion-review, audit]
+    supported_agents: [skill-md-compatible]
+    installation_method: "npx skills add kylezantos/design-motion-principles"
+    license: MIT
+    license_notes: >
+      MIT by the distiller, but content derives from named third parties'
+      published teaching (credited). Do not vendor; link or install only.
+    status: experimental
+    recommended_use: >
+      Secondary to emil-design-skills. Worth studying for its audit-report
+      format and multi-lens weighting; use its audit mode when a visual
+      HTML motion report is wanted.
+    conflicts:
+      - Direct overlap with emil-design-skills review/improve-animations;
+        prefer the canonical source.
+    last_verified: "2026-07-26"
+    rating: 3
+    evaluation_notes: Full tree inspected (workflows/, references/); well-built.
+
+  - id: design-system-ops
+    name: design-system-ops
+    type: skill-collection
+    creator: Murphy Trueman
+    canonical_source: https://github.com/murphytrueman/design-system-ops
+    repository: https://github.com/murphytrueman/design-system-ops
+    description: >
+      30+ skills for design-system operations across five domains: audit
+      (token drift, tier leakage, naming), govern (deprecations, decision
+      logs), document, validate (design-to-code alignment, token compliance),
+      communicate (adoption metrics, stakeholder briefs); chainable via
+      /full-diagnostic.
+    categories: [design-systems, tokens, governance, audit]
+    supported_agents: [claude-code]
+    installation_method: "Clone to ~/.claude/skills/design-system-ops (or .plugin drop-in)"
+    license: MIT
+    license_notes: LICENSE file verified.
+    status: experimental
+    recommended_use: >
+      Only registry entry covering design-system maintenance. Trial on a real
+      token pipeline; promote to approved after one successful audit cycle.
+    conflicts: []
+    last_verified: "2026-07-26"
+    rating: 3
+    evaluation_notes: Substantive and differentiated; young, single-maintainer, 147 stars.
+
+  - id: superpowers
+    name: Superpowers
+    type: skill-collection
+    creator: Jesse Vincent (obra)
+    canonical_source: https://github.com/obra/superpowers
+    repository: https://github.com/obra/superpowers
+    description: >
+      Software-development methodology as composable skills: brainstorming,
+      planning, TDD, git worktrees, code review, parallel agents.
+    categories: [engineering-workflow, methodology]
+    supported_agents: [claude-code, cursor, codex, opencode, copilot-cli, gemini-cli]
+    installation_method: "Plugin marketplace: obra/superpowers-marketplace"
+    license: MIT
+    license_notes: LICENSE verified via companion repos.
+    status: candidate
+    recommended_use: Link only. Engineering-process scope, not design; revisit if adopting its methodology venture-wide.
+    conflicts:
+      - Workflow skills may collide with mattpocock-skills equivalents (tdd, code-review) if both installed.
+    last_verified: "2026-07-26"
+    rating: 3
+    evaluation_notes: Verified via repo family; individual SKILL.md files not deep-inspected (out of design scope).
+
+  - id: awesome-agent-skills
+    name: VoltAgent awesome-agent-skills
+    type: directory
+    creator: VoltAgent
+    canonical_source: https://github.com/VoltAgent/awesome-agent-skills
+    repository: https://github.com/VoltAgent/awesome-agent-skills
+    description: >
+      Curated directory of 1000+ agent skill links organized by source team
+      (official platform teams + community). Contains links, not skill files.
+    categories: [discovery, directory]
+    supported_agents: [n/a]
+    installation_method: "None — nothing to install; discovery index only"
+    license: MIT
+    license_notes: License covers the list itself, not linked skills.
+    status: candidate
+    recommended_use: >
+      Discovery only, when scouting new candidates. Never bulk-import; every
+      find goes through evaluations/TEMPLATE.md individually.
+    conflicts: []
+    last_verified: "2026-07-26"
+    rating: 3
+    evaluation_notes: Confirmed directory-of-links structure; hand-curated.
+
+  # ---- Rejected (recorded so we don't re-litigate) ----
+
+  - id: openai-skills
+    name: openai/skills (Skills Catalog for Codex)
+    type: skill-collection
+    creator: OpenAI
+    canonical_source: https://github.com/openai/skills
+    repository: https://github.com/openai/skills
+    description: Official Codex skills catalog (.system/.curated/.experimental).
+    categories: [codex, engineering-workflow]
+    supported_agents: [codex-cli]
+    installation_method: "$skill-installer (curated) / automatic (system)"
+    license: per-skill LICENSE.txt
+    license_notes: Licenses vary per skill directory.
+    status: rejected
+    recommended_use: None for design purposes.
+    conflicts: []
+    last_verified: "2026-07-26"
+    rating: 2
+    evaluation_notes: >
+      No first-party design skills (frontend-design content there is imported
+      from Anthropic's, tracked here at canonical source). Deprecation notice
+      observed pointing to OpenAI plugins repo — re-verify before citing.
+
+  - id: taste-skill-namesakes
+    name: "Taste-skill namesakes (senlindesign, nxpatterns, Dragoon0x)"
+    type: skill
+    creator: various
+    canonical_source: https://github.com/Leonxlnx/taste-skill
+    repository: "senlindesign/taste-skill, nxpatterns/claude-taste-skill, Dragoon0x/taste-skills"
+    description: Name-collision repos riding the Taste Skill wave.
+    categories: [visual-taste]
+    supported_agents: [various]
+    installation_method: n/a
+    license: unverified
+    license_notes: Not individually license-checked; excluded before that stage.
+    status: rejected
+    recommended_use: >
+      None. Exception path: senlindesign's reverse-engineer-a-site's-tokens
+      angle may return as a standalone candidate with a real use case.
+    conflicts: []
+    last_verified: "2026-07-26"
+    rating: 1
+    evaluation_notes: Excluded as non-canonical duplicates, not inspected in depth.
