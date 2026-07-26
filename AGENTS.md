@@ -16,6 +16,12 @@ This file is the operating manual for any agent (Claude Code, Codex, Cursor, Gem
 6. **Never execute an untrusted install script.** Read any third-party script (including SKILL.md pre/post hooks) before running. Prefer `scripts/install.sh`, which forces inspection.
 7. **Verify before citing.** `last_verified` dates go stale; if acting on an entry more than ~90 days old, re-check the upstream repo and update the entry.
 
+## Working from another repository
+
+If you are working in a **consumer project** rather than in this repository, read [`docs/INTEGRATION_CONTRACT.md`](docs/INTEGRATION_CONTRACT.md) after this file. It defines the ownership boundaries, the discovery order (project `docs/DESIGN_INTELLIGENCE.md` → pinned ref → this file → contract → registry → agent specs), reviewer routing, and the required failure behavior when this repository is unreachable. The rules above apply unchanged there; the contract adds no exceptions to them.
+
+Strategic context — venture priority, founder preferences, adoption status — belongs in HeldyOS, not here: [`docs/HELDYOS_BRIDGE.md`](docs/HELDYOS_BRIDGE.md).
+
 ## Per-agent consumption
 
 - **Claude Code:** load skills via plugin marketplace or `npx skills add <source>` per the registry entry; internal agents in `agents/` can be used as subagent definitions (`.claude/agents/`) or pasted as system prompts. This AGENTS.md is picked up automatically when working inside the repo.

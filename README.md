@@ -19,6 +19,9 @@ agents/              Internal agent specifications (reviewers, design roles).
 references/          Verified creators, canonical repos, and principle notes.
 evaluations/         One file per evaluation round + the evaluation template.
 scripts/             install.sh — assisted install for verified sources only.
+docs/                Integration contract, consumer template, HeldyOS bridge.
+schemas/             JSON Schema for a project's connection record.
+examples/            Illustrative (non-authoritative) filled-in records.
 ```
 
 The **registry is the product**. Folders hold only what has passed through it.
@@ -58,6 +61,16 @@ candidate → (evaluation) → approved | experimental | rejected | license-revi
 ## How coding agents consume this repo
 
 See [`AGENTS.md`](AGENTS.md) — it is written to be loaded directly by Claude Code, Codex, Cursor, and Gemini CLI, and defines skill-selection and conflict rules (short version: **one design-opinion skill at a time**).
+
+## How other repositories consume this repo
+
+[`docs/INTEGRATION_CONTRACT.md`](docs/INTEGRATION_CONTRACT.md) is the contract for external project repositories (Rent With Heldy, The Feed, Miami Roots, SideQuests, and so on): ownership boundaries, discovery order, required consumer files, reviewer routing, how findings travel back, and what happens when this repo is unreachable.
+
+A project integrates by copying [`docs/CONSUMER_TEMPLATE.md`](docs/CONSUMER_TEMPLATE.md) to its own `docs/DESIGN_INTELLIGENCE.md` and filling it in — optionally alongside a machine-readable record validating against [`schemas/project-consumer.schema.json`](schemas/project-consumer.schema.json) ([example](examples/project-consumer.example.yaml)).
+
+**Nothing is synchronized.** There is no submodule, package, sync script, or MCP server: consumers pin a commit, read this repository at that ref, and a human bumps the ref on re-review. The link/vendor/fork/submodule table above governs consumers unchanged.
+
+The boundary with strategic memory — what belongs in HeldyOS/Obsidian rather than here — is in [`docs/HELDYOS_BRIDGE.md`](docs/HELDYOS_BRIDGE.md).
 
 ## Licensing and attribution rules
 
