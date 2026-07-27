@@ -1,0 +1,337 @@
+# EXAMPLE ONLY — NOT AUTHORITATIVE PROJECT DATA
+#
+# Validation fixture 2 of 3 for skills/internal/motion-* and
+# schemas/motion-spec.schema.json. It exercises an editorial/institutional
+# landing page requiring coordinated choreography. The institution, paths,
+# owner and dates are invented for illustration.
+#
+# Real motion specs live in the CONSUMER repository beside DESIGN_BRIEF.md,
+# never here (INTEGRATION_CONTRACT.md §1, §11).
+#
+# Schema: ../schemas/motion-spec.schema.json (JSON Schema draft 2020-12).
+#
+# ── Why this fixture selects gsap ────────────────────────────────────────────
+# Two independent gates, either of which alone would be sufficient:
+#   1. Dependent timing offsets across five elements. Changing the headline's
+#      duration must automatically move everything after it. That is a
+#      timeline, not a pile of delays.
+#   2. Scroll SCRUBBING and PINNING. The sequence is tied to scroll position,
+#      not to elapsed time.
+#
+# It is NOT css-scroll-driven, even though that is the lower tier and would
+# handle the scrub: Firefox is explicitly in scope for this institution's
+# audience, scroll-driven CSS is Baseline LIMITED with no Firefox support as of
+# 2026-07-26, and pinning has no native equivalent at all. This is
+# motion-selection's Modification 1 applied to a real case.
+#
+# It is NOT motion-react: this page is server-rendered Astro with no React
+# island on the timeline section, and Motion has no scrub/pin primitive.
+
+spec_id: editorial-founding-scrollytelling
+date: "2026-07-26"
+owner: Andrew Heldy
+brief_ref: docs/briefs/DESIGN_BRIEF-founding-story.md
+registry_entries_used:
+  - motion-intelligence
+  - gsap
+  - gsap-skills
+  - emil-design-skills
+
+objective: >
+  The institution's founding story is the single strongest reason a prospective
+  donor keeps reading, and in the current static layout 80% of visitors leave
+  before reaching the 1946 section. The archival photographs and the dates need
+  to arrive in a deliberate order so the chronology is legible as chronology
+  rather than as a wall of images — the sequence IS the argument.
+
+semantic_purpose: express-brand
+surface: editorial
+
+trigger:
+  interaction: scroll
+  frequency: once-per-session
+  input_methods: [pointer, touch, keyboard, assistive-technology]
+
+elements:
+  - target: "#founding .era-heading"
+    properties: [opacity, transform]
+    role: primary
+  - target: "#founding .archival-photo"
+    properties: [opacity, transform, clip-path]
+    role: supporting
+  - target: "#founding .year-marker"
+    properties: [opacity, transform]
+    role: indicator
+  - target: "#founding .timeline-rule"
+    properties: [transform]
+    role: supporting
+  - target: "#founding"
+    properties: [transform]
+    role: container
+
+spatial_relationship: >
+  The timeline rule draws downward from the 1946 marker, establishing the
+  vertical axis as time. Each era heading enters from the rule's left, its
+  photograph from the right, so the rule reads as the spine the chronology
+  hangs from. Nothing crosses the rule. The section pins so the rule stays
+  fixed while eras advance past it — the reader holds still and time moves,
+  which is the intended reading of the content.
+
+engine: gsap
+
+selection_rationale:
+  escalation_reason: >
+    Two gates, either sufficient. First, dependent timing: five elements per
+    era where the photograph's reveal must begin at a fixed offset from the
+    heading's, and the year marker at an offset from the rule's draw — changing
+    the heading duration must automatically move all of them. That is a
+    timeline, and it is precisely what sequential delays cannot survive
+    editing. Second, scroll scrubbing tied to position rather than time, plus
+    pinning, which has no native equivalent at any tier.
+  rejected_alternatives:
+    - engine: none
+      why_not: >
+        The sequence carries the chronology. A static layout was the previous
+        design and produced the 80% drop-off this brief exists to address.
+    - engine: css-keyframes
+      why_not: >
+        Time-based, not scroll-position-based. Cannot scrub, cannot pin, and
+        dependent offsets degrade into hand-maintained delays that break on
+        the first content edit.
+    - engine: css-scroll-driven
+      why_not: >
+        The correct lower tier for the scrub, and rejected on verified support
+        data, not preference. Baseline LIMITED — Chrome 115, Safari 26, NO
+        Firefox as of 2026-07-26. Firefox is explicitly in scope for this
+        audience (institutional and academic desktop traffic). Per
+        motion-selection Modification 1, the choice is either an accepted
+        static degradation or escalation; the chronology is the content, so
+        degradation is not acceptable. Separately, pinning has no native
+        equivalent.
+    - engine: motion-react
+      why_not: >
+        The page is server-rendered Astro with no React island on this section,
+        and Motion provides no scrub or pin primitive. useScroll could drive
+        progress but would leave the dependent offsets hand-maintained.
+    - engine: rive
+      why_not: >
+        The assets are archival photographs, not designer-authored state
+        machines. Adds a proprietary editor to the pipeline for no gain.
+  new_dependency: true
+  layer_ownership: >
+    GSAP owns the pinned founding section only. The rest of the site uses
+    native CSS transitions. Motion is not present in this project. No element
+    inside #founding is animated by any other mechanism.
+
+sequence:
+  - step: 1
+    target: "#founding .timeline-rule"
+    change: "scaleY 0 → 1 from the top origin, scrubbed across the first 15% of the pinned range"
+  - step: 2
+    target: "#founding .era-heading"
+    change: "opacity 0 → 1, translateX -24px → 0"
+    offset: "-0.3 (overlaps the rule draw, so the heading arrives as the rule passes it)"
+  - step: 3
+    target: "#founding .year-marker"
+    change: "opacity 0 → 1, scale 0.94 → 1"
+    offset: "-0.15"
+  - step: 4
+    target: "#founding .archival-photo"
+    change: "opacity 0 → 1, clip-path inset(0 100% 0 0) → inset(0 0 0 0), translateX 32px → 0"
+    offset: "+0.05"
+  - step: 5
+    target: "#founding .era-heading"
+    change: "previous era: opacity 1 → 0.25 as the next era's heading enters"
+    offset: "-0.2"
+
+timing:
+  duration_ms: 900
+  delay_ms: 0
+  stagger_ms: 120
+  derivation: >
+    Duration here is the scrub range mapped to a nominal 900ms character
+    baseline, not a wall-clock value — the reader's scroll speed sets the real
+    duration, and the number defines the RATIO between steps. Distance: the
+    photograph travels 32px plus a full-width clip reveal, the largest movement
+    in the sequence, so it takes the longest share. Hierarchy: this is a
+    full-viewport pinned section, the deepest surface on the site, which earns
+    the longest ratios anywhere in this project — an inline link hover here is
+    120ms. Content: five elements across four eras, so a 120ms stagger keeps
+    each arrival individually legible without the last era's offset becoming a
+    perceptible wait. Input: pointer and touch scroll only; keyboard paging
+    jumps rather than scrubs, and the sequence must be complete at any resting
+    position. Purpose: express-brand on a once-per-session trigger — the one
+    place on this site where motion may take real time, because it is seen once
+    and the sequence is the argument.
+
+easing:
+  kind: cubic-bezier
+  curve: "cubic-bezier(0.16, 1, 0.3, 1)"
+  exit_curve: "cubic-bezier(0.7, 0, 0.84, 0)"
+  character: >
+    A pronounced decelerating curve so each element settles rather than
+    arriving — archival material should feel placed, not thrown. The exit curve
+    accelerates because a departing era should get out of the way quickly; the
+    reader's attention has already moved to the next one.
+
+interruption:
+  behavior: retarget-preserving-velocity
+  notes: >
+    Scrubbed timelines follow scroll position, so reversing scroll reverses the
+    sequence naturally. Set `scrub: 0.8` rather than `true` so rapid flicking
+    smooths instead of snapping. Do not attach any tween to the same elements
+    outside this timeline. On resize, call ScrollTrigger.refresh() — pin
+    spacing is computed from measured heights and is wrong after a resize
+    otherwise.
+
+responsive:
+  mobile: >
+    Pinning is DISABLED below 768px. On short viewports a pinned section
+    consumes the entire screen for the duration of the scroll and traps the
+    reader, and iOS Safari's dynamic toolbar makes pin offsets unreliable.
+    Mobile uses a simple non-pinned reveal per era, triggered on entry, with no
+    scrub. Implemented as a separate gsap.matchMedia() branch, not as an
+    override of the desktop timeline.
+  tablet: >
+    Pinning enabled at 768px and above in landscape only. Portrait tablets use
+    the mobile branch — viewport height is the constraint, not width.
+  desktop: >
+    Full pinned scrub as specified.
+  orientation_or_input_notes: >
+    No hover-dependent motion. Touch scroll momentum is not intercepted; no
+    smooth-scroll library is used anywhere on this site.
+
+reduced_motion:
+  strategy: none
+  end_state_preserved: true
+  implementation: >
+    A `gsap.matchMedia()` branch on `(prefers-reduced-motion: reduce)` that
+    creates NO timeline and NO ScrollTrigger at all — the section renders in
+    its final state, fully readable, with the rule drawn, all four eras at full
+    opacity and all photographs revealed. Pinning is also disabled, so scrolling
+    is entirely native. gsap.context() is NOT nested inside matchMedia, per the
+    official gsap-core guidance. Because the strategy is `none`, the static
+    layout must be the authored default and the timeline must animate FROM it,
+    never TO it — otherwise a reduce user sees an empty section.
+  vestibular_review: >
+    Three triggers present and all suppressed under reduce. (1) Large-area
+    movement — the pinned section occupies the full viewport while eras advance.
+    (2) Scroll-position-coupled motion, which is the same class of discomfort as
+    parallax even though no layer moves at a different rate. (3) The clip-path
+    reveal sweeps across a large photograph. No rotation, no zoom, no scroll
+    hijacking, no flashing. Suppression is total rather than reduced because
+    partial suppression of a pinned scrub still pins.
+
+keyboard_and_focus:
+  runs_on_keyboard_trigger: false
+  focus_behavior: >
+    Nothing in the pinned section is focusable except the two archival-source
+    links, which are never animated and remain in their final positions
+    throughout. Focus is never moved by the timeline. Because the section pins,
+    tabbing to a link inside it must scroll the pin correctly — verified
+    explicitly, since pinned containers are a known cause of focus scrolling to
+    an offset position. Focus indicators are outlines, not box-shadows, so a
+    transformed ancestor cannot clip them.
+  reason_if_animated: >
+    Not applicable. Keyboard paging (Space, PageDown) jumps through the scrub
+    range rather than scrubbing it; the sequence must therefore be visually
+    complete and correct at every resting scroll position, not only at the ends.
+
+ssr:
+  renders_on_server: true
+  hydration_notes: >
+    Astro renders the section statically in its FINAL state — rule drawn, all
+    eras visible. GSAP then sets the animation's start state on the client
+    inside gsap.context() after mount. This ordering is deliberate: if JS never
+    loads, fails, or is blocked, the reader gets the complete founding story
+    rather than an empty section. Never author the start state into the HTML.
+    A brief flash between paint and GSAP's set() is accepted and is preferable
+    to invisible content; it is mitigated by scoping set() to the section and
+    running it before the first scroll can occur.
+  client_boundary: >
+    Astro island `FoundingTimeline.astro` with client:visible. GSAP and
+    ScrollTrigger are dynamically imported inside the island so they are absent
+    from the initial page payload entirely.
+
+cleanup:
+  on_unmount: >
+    gsap.context() scoped to the #founding element; ctx.revert() on island
+    teardown, which kills every tween, removes every ScrollTrigger created
+    inside the scope, and restores inline styles. ScrollTrigger.getAll() must
+    return to baseline after teardown.
+  listeners_and_observers: >
+    ScrollTrigger installs its own scroll and resize listeners; ctx.revert()
+    removes them. One additional matchMedia listener for the reduced-motion
+    branch, removed in the same teardown. No manual scroll listeners and no
+    requestAnimationFrame loops are added.
+  route_change_notes: >
+    This is an MPA — full page loads, so route-change leakage is not possible
+    by construction. If the site ever adopts client-side routing, ctx.revert()
+    must run on route exit and ScrollTrigger.refresh() on entry, or pin spacers
+    accumulate. The pin spacer is the specific artifact to watch: it is a DOM
+    element GSAP inserts, and a stale one shifts every subsequent section.
+
+performance_budget:
+  compositor_only: false
+  added_bytes_gz: 62000
+  target_fps: 60
+  cls_contribution: >
+    Zero from the animation, because the section is authored at final size and
+    animates from that layout. The pin spacer itself is a CLS risk on first
+    refresh — ScrollTrigger.refresh() must complete before the section enters
+    the viewport, and this is verified rather than assumed.
+  inp_notes: >
+    Scroll-driven and not tied to a discrete interaction, so INP is not the
+    relevant metric. The risk is scroll responsiveness: scrub work must stay
+    off the scroll handler, which ScrollTrigger handles via its own rAF loop.
+  notes: >
+    compositor_only is false — clip-path animation is a paint operation, not a
+    composite. Accepted here because it is confined to four photographs on one
+    once-per-session editorial surface, and verified under 4x throttling. 62 KB
+    (GSAP core + ScrollTrigger, measured, gzipped) is within the 70 KB
+    editorial budget, and it is dynamically imported so it never touches the
+    site's other routes. This budget would FAIL on conversion-flow or dashboard.
+
+verification:
+  method: playwright-script
+  required_checks:
+    - RM-1
+    - RM-2
+    - RM-3
+    - A11Y-1
+    - A11Y-2
+    - CON-1
+    - SSR-1
+    - SSR-2
+    - FALL-1
+    - SCR-1
+    - SCR-2
+    - SCR-3
+    - VP-1
+    - VP-2
+    - VP-3
+    - OVF-1
+    - CLS-1
+    - CLEAN-2
+    - CLEAN-3
+    - PERF-1
+    - PERF-2
+  viewports: ["375x812", "768x1024", "1440x900"]
+  evidence_path: docs/design/verification/2026-07-26-founding-timeline/
+
+acceptance_criteria:
+  - Under emulated prefers-reduced-motion, no ScrollTrigger is created, the section does not pin, and all four eras with all photographs are fully visible and readable.
+  - With JavaScript disabled entirely, the section renders the complete founding story in its final state.
+  - The pinned section releases correctly after scrolling through forward and backward, after a mid-pin resize, and at all three viewports, leaving no stale pin spacer.
+  - Below 768px the section does not pin, and no scrub timeline is created.
+  - Scrolling through the section at maximum speed produces no dropped frames beyond the 60fps floor under 4x CPU throttling.
+  - Tabbing to an archival-source link inside the pinned section scrolls to it correctly and the focus outline is fully visible.
+  - GSAP is absent from the initial page payload on every route other than the founding page.
+
+expected_failure_modes:
+  - Stuck pinned section on iOS Safari when the dynamic toolbar resizes the viewport mid-scroll — the single most common GSAP production defect, and the reason SCR-3 is mandatory here.
+  - Pin spacer left in the DOM after a resize, shifting every section below it.
+  - The start state authored into the HTML instead of set on the client, leaving an empty section for anyone whose JS fails.
+  - ScrollTrigger.refresh() not called after web fonts load, so pin offsets are computed against pre-font layout heights and every era arrives at the wrong scroll position.
+  - Duplicate ScrollTriggers created if the island re-initialises without ctx.revert().
+  - The reduced-motion branch reducing rather than removing, so the section still pins and still traps the reader.

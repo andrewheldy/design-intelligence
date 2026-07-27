@@ -1,0 +1,322 @@
+# EXAMPLE ONLY — NOT AUTHORITATIVE PROJECT DATA
+#
+# Validation fixture 3 of 3 for skills/internal/motion-* and
+# schemas/motion-spec.schema.json. It exercises a conversion-oriented interface
+# requiring restrained native motion. The product, paths, owner and dates are
+# invented for illustration.
+#
+# Real motion specs live in the CONSUMER repository beside DESIGN_BRIEF.md,
+# never here (INTEGRATION_CONTRACT.md §1, §11).
+#
+# Schema: ../schemas/motion-spec.schema.json (JSON Schema draft 2020-12).
+#
+# ── Why this fixture selects css-transition ──────────────────────────────────
+# No escalation gate is passed, and the budget forbids paying for one anyway.
+# The effect is a discrete state change on a single element with values known
+# at author time — the textbook tier 1 case. On a checkout surface, 30-60 KB of
+# animation library is a revenue decision, not a design one, and the
+# conversion-flow budget is 0 KB.
+#
+# The one WAAPI escalation (the shake) is justified narrowly and separately:
+# rapid re-submission must retarget an in-flight animation, which CSS cannot do
+# without class-toggling hacks that visibly stutter.
+#
+# This fixture exists to prove the system does NOT default to a library.
+
+spec_id: checkout-submit-feedback
+date: "2026-07-26"
+owner: Andrew Heldy
+brief_ref: docs/briefs/DESIGN_BRIEF-checkout-v3.md
+registry_entries_used:
+  - motion-intelligence
+  - emil-design-skills
+
+objective: >
+  On the payment step, 6% of sessions submit the order more than once. Session
+  replays show the pattern: the button is pressed, nothing visibly changes
+  while the payment intent is created, and the customer presses again. The
+  duplicate submissions are idempotent server-side, but the customers who do it
+  report believing the order failed, and a measurable share abandon. The button
+  must acknowledge the press immediately and visibly show that work is
+  underway.
+
+semantic_purpose: confirm-action
+surface: conversion-flow
+
+trigger:
+  interaction: click-or-tap
+  frequency: once-per-session
+  input_methods: [pointer, touch, keyboard, assistive-technology]
+
+elements:
+  - target: ".submit-order[data-state]"
+    properties: [transform, background-color]
+    role: primary
+  - target: ".submit-order .spinner"
+    properties: [opacity, transform]
+    role: indicator
+  - target: ".submit-order .label"
+    properties: [opacity]
+    role: supporting
+  - target: ".field-error"
+    properties: [opacity, transform]
+    role: indicator
+
+spatial_relationship: >
+  The press state compresses the button toward its own centre — the feedback
+  originates exactly where the finger or cursor is, so it reads as a direct
+  response rather than an unrelated screen event. The spinner cross-fades in
+  place at the label's position rather than sliding in from elsewhere; the
+  button does not change size, because a button that resizes on submit shifts
+  everything below it on a page the customer is still reading. On validation
+  failure the error message appears directly beneath its own field and the
+  field itself shakes on the horizontal axis only, a movement of 4px, which is
+  a recognised "no" without being a full-surface event.
+
+engine: css-transition
+
+selection_rationale:
+  escalation_reason: >
+    None. No gate to tier 2 is passed by the press and loading states: the
+    values are known at author time, nothing needs interruption with velocity,
+    no DOM morph occurs, and nothing is scroll-driven. Tier 1 is the correct
+    answer and this field records that the hierarchy was walked and stopped.
+    ONE narrow exception is escalated separately and deliberately: the
+    validation shake uses WAAPI, because rapid re-submission must cancel and
+    restart an in-flight animation with correct state. In CSS this requires
+    removing and re-adding a class across a reflow, which visibly stutters on
+    the second attempt — exactly the moment a frustrated customer is watching.
+  rejected_alternatives:
+    - engine: none
+      why_not: >
+        Considered seriously and rejected on evidence. The absence of feedback
+        is the documented cause of the 6% duplicate-submission rate. This is
+        the confirm-action case where motion prevents a real user error rather
+        than decorating one.
+    - engine: waapi
+      why_not: >
+        Used only for the shake. Unnecessary for the press and loading states,
+        which are discrete transitions with author-time values — using it there
+        would add JS to the critical path for no capability.
+    - engine: view-transitions
+      why_not: >
+        No DOM morph between two states; the button stays in place. Would also
+        wrap a payment-critical state change in an API whose failure path adds
+        risk for no benefit.
+    - engine: motion-react
+      why_not: >
+        ~34 KB gzipped on a checkout page against a 0 KB budget, for an effect
+        CSS performs identically. Every KB on this route has a measurable
+        conversion cost, and no lifecycle gate is passed — nothing unmounts,
+        nothing reorders, no shared element morphs.
+    - engine: gsap
+      why_not: >
+        Over-escalation by two tiers. No dependent timing offsets, no scroll,
+        no SVG, no drag. Would add ~60 KB and a proprietary licence to a
+        payment path for a button press.
+  new_dependency: false
+  layer_ownership: >
+    Not applicable — no animation library is present on any checkout route,
+    and none may be added without a new brief. This is a standing constraint on
+    the /checkout bundle, not a preference for this spec.
+
+sequence:
+  - step: 1
+    target: ".submit-order[data-state]"
+    change: "press: scale 1 → 0.98 on pointerdown, back to 1 on release"
+  - step: 2
+    target: ".submit-order .label"
+    change: "submitting: opacity 1 → 0"
+    offset: "+0s (begins the moment the request is dispatched)"
+  - step: 3
+    target: ".submit-order .spinner"
+    change: "opacity 0 → 1"
+    offset: "-0.06s (overlaps the label fade so the button is never empty)"
+  - step: 4
+    target: ".field-error"
+    change: "on failure: opacity 0 → 1, translateY -4px → 0"
+  - step: 5
+    target: ".submit-order[data-state]"
+    change: "on failure: translateX shake, 0 → -4px → 4px → 0 (WAAPI)"
+    offset: "+0.04s"
+
+timing:
+  duration_ms: 120
+  delay_ms: 0
+  derivation: >
+    Distance: the press travels effectively nothing — a 2% scale on a 48px
+    control is under 1px of edge movement — so it sits at the absolute shortest
+    end. Hierarchy: a single leaf control, not a surface, which is the shallowest
+    thing that can animate. Content: one element, no stagger, nothing to
+    sequence for legibility. Input: pointer and touch both need the press
+    acknowledged within roughly 100ms to feel direct; anything above ~150ms
+    reads as lag on the exact interaction the customer is anxious about.
+    Keyboard submission does not animate the press at all. Purpose:
+    confirm-action is the shortest motion on any surface by definition, and on
+    a conversion flow it must never sit between the input and the result — the
+    request is dispatched first and the animation runs alongside it, never
+    before. 120ms is the shortest duration that is still perceptible as a
+    response rather than a jump.
+
+easing:
+  kind: cubic-bezier
+  curve: "cubic-bezier(0.2, 0, 0, 1)"
+  exit_curve: "cubic-bezier(0.4, 0, 1, 1)"
+  character: >
+    A fast-out curve so the press registers immediately at the start of the
+    gesture, where the customer's attention is. Deliberately not a spring: any
+    bounce or overshoot on a payment button reads as instability at the moment
+    the customer most needs the interface to feel dependable.
+
+interruption:
+  behavior: cancel-and-snap
+  notes: >
+    The button is disabled the instant the request dispatches, so re-pressing
+    is impossible during submission — that is the actual fix for duplicate
+    submissions; the animation is the feedback that makes the disabled state
+    comprehensible rather than confusing. For the validation shake, keep the
+    WAAPI Animation reference and cancel() it before starting a new one, so
+    repeated failed submissions restart cleanly rather than compounding.
+
+responsive:
+  mobile: >
+    Identical. The effect is a 2% scale and an in-place cross-fade, both of
+    which read the same at 375px. Nothing is shortened or removed. The button's
+    44px minimum target is unaffected by the scale, because the scale is
+    visual and the hit area is not transformed.
+  tablet: >
+    Identical.
+  desktop: >
+    Identical, plus a hover state at 80ms that does not exist on touch.
+  orientation_or_input_notes: >
+    The hover state is pointer-only and carries no information the press state
+    does not. No functionality depends on hover anywhere in this flow.
+
+reduced_motion:
+  strategy: opacity-only
+  end_state_preserved: true
+  implementation: >
+    Transitions are declared inside `@media (prefers-reduced-motion:
+    no-preference)`, so the reduced state is the authored default and no
+    override can be forgotten. Under reduce, the scale, the translateY on the
+    error, and the shake are all absent; the spinner's opacity cross-fade is
+    retained because it carries status rather than movement. The WAAPI shake
+    checks matchMedia before creating the animation and re-checks on the
+    media query's change event, so toggling the OS setting mid-session is
+    honoured without a reload. Every state — pressed, submitting, failed,
+    succeeded — is still reached and still visible.
+  vestibular_review: >
+    No vestibular trigger. Movement is under 1px of edge travel on a single
+    48px control; the shake is 4px on one axis and is suppressed under reduce
+    regardless. No large-area movement, no parallax, no zoom, no rotation, no
+    scroll coupling.
+
+keyboard_and_focus:
+  runs_on_keyboard_trigger: false
+  focus_behavior: >
+    Focus remains on the submit button throughout submission and is never moved
+    by the effect. The button stays focusable while disabled (aria-disabled
+    rather than the disabled attribute) specifically so keyboard focus is not
+    dropped to document.body at the moment the request dispatches. The focus
+    ring is an outline offset outside the button, so the 0.98 scale cannot clip
+    it, and it is not animated — it appears and disappears instantly. On
+    validation failure focus moves to the first invalid field, before that
+    field's error animation begins.
+  reason_if_animated: >
+    Not applicable. Enter or Space submission applies the disabled and loading
+    states instantly with no press animation — there is no press gesture to
+    acknowledge, and a keyboard customer has already moved on.
+
+ssr:
+  renders_on_server: true
+  hydration_notes: >
+    The button is server-rendered in its resting state with the label visible
+    and the spinner at opacity 0 in the static CSS — not via any JS-applied
+    initial state. The server HTML is complete and correct with no JS at all,
+    and the form degrades to a standard POST. Nothing about the visual state
+    differs between server and client render, so there is no hydration mismatch
+    surface. The WAAPI shake is attached in an event handler, never at mount,
+    so it cannot execute during hydration.
+  client_boundary: >
+    Not applicable in the RSC sense — the checkout form is a progressively
+    enhanced server-rendered form. The only client JS on this route is the
+    submit handler and the shake, both in a single 1.2 KB module.
+
+cleanup:
+  on_unmount: >
+    CSS transitions require no teardown. The single WAAPI shake animation is
+    cancelled in the handler before any new one starts, and cancelled on
+    navigation away so a finished animation does not hold a reference to a
+    removed button.
+  listeners_and_observers: >
+    One submit listener and one matchMedia change listener for the reduced-
+    motion re-check, both removed on unload. No scroll listeners, no observers,
+    no requestAnimationFrame loops anywhere on this route.
+  route_change_notes: >
+    Checkout is a multi-step server-rendered flow with full page loads between
+    steps, so no client-side route teardown exists to leak. If the flow is ever
+    converted to client-side routing, the two listeners must be removed on
+    route exit.
+
+performance_budget:
+  compositor_only: true
+  added_bytes_gz: 0
+  target_fps: 60
+  cls_contribution: >
+    Zero, and this is enforced by design. The button does not change size on
+    submit; the spinner occupies the label's space rather than displacing it;
+    the error message renders into a reserved min-height container so its
+    appearance shifts nothing below it. On a checkout page a layout shift can
+    move the submit button under the customer's finger mid-tap, which is worse
+    than no feedback at all.
+  inp_notes: >
+    The payment request is dispatched FIRST; the animation runs alongside it
+    and never blocks it. No measurement, no layout read, and no await sits in
+    the click handler before dispatch. This ordering is the difference between
+    feedback and latency.
+  notes: >
+    transform and opacity only — fully composited. Zero bytes added: no
+    dependency, and the shake is 1.2 KB of application code already present.
+    The conversion-flow budget is 0 KB of animation library and this spec meets
+    it exactly. Any future request to add Motion or GSAP to this route requires
+    a new brief and an explicit revenue justification.
+
+verification:
+  method: playwright-mcp
+  required_checks:
+    - RM-1
+    - RM-2
+    - RM-3
+    - A11Y-1
+    - A11Y-2
+    - A11Y-4
+    - CON-1
+    - SSR-1
+    - SSR-2
+    - INT-1
+    - INT-2
+    - VP-1
+    - VP-2
+    - VP-3
+    - OVF-1
+    - CLS-1
+    - PERF-1
+  viewports: ["375x812", "768x1024", "1440x900"]
+  evidence_path: docs/design/verification/2026-07-26-checkout-submit/
+
+acceptance_criteria:
+  - Under emulated prefers-reduced-motion, no scale or shake occurs, and the pressed, submitting, failed and succeeded states are all still visibly reached.
+  - With JavaScript disabled the form submits by standard POST and the flow completes.
+  - Pressing submit ten times rapidly dispatches exactly one request and leaves the button in a correct disabled loading state.
+  - Keyboard submission via Enter applies the loading state instantly with no press animation, and focus stays on the button.
+  - Cumulative layout shift attributable to the button, spinner and error message is zero at all three viewports.
+  - No animation library appears in the /checkout bundle; the route's added animation bytes are zero.
+  - The press state is visible within 100ms of pointerdown under 4x CPU throttling.
+
+expected_failure_modes:
+  - Using the native disabled attribute instead of aria-disabled, dropping keyboard focus to document.body at the exact moment the customer is most anxious.
+  - The error message rendering without a reserved container, shifting the submit button under the customer's finger during a mis-tap.
+  - The scale transform clipping the focus outline if the ring is drawn as an inset box-shadow rather than an offset outline.
+  - Animation work placed before request dispatch in the click handler, converting feedback into measurable latency on the revenue path.
+  - A future contributor adding a library for the shake because "CSS can't restart an animation cleanly" — the WAAPI escalation is documented here precisely to pre-empt that.
+  - The reduced-motion branch written as an override rather than as the default, so a newly added state is animated by accident.

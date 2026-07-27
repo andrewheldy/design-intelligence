@@ -14,15 +14,18 @@ registry.yaml        Single source of truth: every known source, its status,
 skills/
   external/          Vendored copies of third-party skills (only when license
                      and the vendoring decision are recorded in the registry).
-  internal/          Skills we author ourselves.
+  internal/          Skills we author ourselves — currently the Motion
+                     Intelligence family (enter at motion-director).
   experimental/      Skills under trial — internal or vendored — not yet
                      cleared for default use.
 agents/              Internal agent specifications (reviewers, design roles).
 references/          Verified creators, canonical repos, and principle notes.
 evaluations/         One file per evaluation round + the evaluation template.
 scripts/             install.sh — assisted install for verified sources only.
-docs/                Integration contract, consumer template, HeldyOS bridge.
-schemas/             JSON Schema for a project's connection record.
+docs/                Integration contract, consumer template, HeldyOS bridge,
+                     MCP decision record.
+schemas/             JSON Schema for a project's connection record and for a
+                     motion specification.
 examples/            Illustrative (non-authoritative) filled-in records.
 ```
 
@@ -60,6 +63,19 @@ candidate → (evaluation) → approved | experimental | rejected | license-revi
 | **Internal adaptation** | We want the *pattern*, not the text — rewrite in our own words in `skills/internal/` or `agents/`, crediting the inspiration (e.g. our reviewer agents adapt OneRedOak's design-review loop). |
 | **Do not install** | Directories, rejected entries, or anything whose license is unresolved. |
 
+## Motion Intelligence
+
+Any task involving animation enters at [`skills/internal/motion-director/SKILL.md`](skills/internal/motion-director/SKILL.md) (registry: `motion-intelligence`), which routes through the whole path: should this animate → what does it communicate → the lowest-complexity engine that can do it → a written specification → implementation → browser verification → audit.
+
+The ratified engine hierarchy is **no animation → CSS → native browser APIs → Motion → GSAP → specialist runtimes**, and every escalation past a tier must be written down. `engine: none` is a complete answer and should be a common one — decorative animation is not inherently desirable.
+
+- Eight skills and what each owns: [`skills/internal/README.md`](skills/internal/README.md)
+- The specification format: [`schemas/motion-spec.schema.json`](schemas/motion-spec.schema.json), with three worked fixtures in [`examples/`](examples/) that deliberately select three different engines
+- Why no MCP server was built: [`docs/MOTION_MCP_DECISION.md`](docs/MOTION_MCP_DECISION.md)
+- The evidence behind every source decision: [`evaluations/2026-07-26-motion-intelligence.md`](evaluations/2026-07-26-motion-intelligence.md)
+
+`emil-design-skills` remains the registered authority on motion *character*. Motion Intelligence decides the *engine*, writes the *specification*, and proves the *result*.
+
 ## How coding agents consume this repo
 
 See [`AGENTS.md`](AGENTS.md) — it is written to be loaded directly by Claude Code, Codex, Cursor, and Gemini CLI, and defines skill-selection and conflict rules (short version: **one design-opinion skill at a time**).
@@ -89,9 +105,16 @@ Rules for evaluating and handling those source licenses:
 - Vendored copies keep the upstream LICENSE, a `SOURCE` note (URL + commit), and the creator's name. Attribution is preserved even when licenses don't strictly require it.
 - MIT-licensed *distillations of other people's teaching* (e.g. third-party summaries of a course) are treated cautiously: link or install, never vendor. The distiller's license can't launder the derivation.
 - Anthropic's document skills (docx/pdf/pptx/xlsx) are source-available, not open source — excluded from vendoring; their design skills are Apache-2.0.
+- **Free of charge is not the same as open source.** GSAP is free for commercial use but proprietary: Webflow owns it, the repository carries no LICENSE file, and its custom "standard no-charge" terms prohibit use in tools competing with Webflow's visual animation builder. It is registered, usable, and **must never be vendored**. Its *skills* repository is separately and genuinely MIT — the two are not interchangeable, and the registry records them as distinct entries.
+- A registered runtime's own terms are recorded in its entry and are not narrowed by this repository's MIT license. That includes proprietary terms (GSAP), paid-tier boundaries on official skills (Motion+), and proprietary tooling behind an open runtime (Rive's editor).
 - Freemium sources (e.g. UI/UX Pro Max) are used within their open tier only; tier boundaries checked before any redistribution.
 - Never run an install script from an external repo without reading it first. `scripts/install.sh` prints skill contents for inspection before any install.
 
 ## Status
 
-Initial registry: 13 entries (6 approved, 3 experimental, 2 candidate, 2 rejected). See `evaluations/2026-07-26-initial-research.md` for the full evidence trail.
+**Registry v2 (2026-07-26): 23 entries** — 10 approved, 4 experimental, 6 candidate, 3 rejected.
+
+- Round 1, 13 entries: [`evaluations/2026-07-26-initial-research.md`](evaluations/2026-07-26-initial-research.md)
+- Round 2, 10 motion entries + the first internal skills: [`evaluations/2026-07-26-motion-intelligence.md`](evaluations/2026-07-26-motion-intelligence.md)
+
+Round 2 added a `library` entry type for runtime dependencies, whose licenses and maintenance states are governance facts, and an `origin: internal` marker for first-party content. Nothing is installed by this repository; it remains documentation-only with zero dependencies.
