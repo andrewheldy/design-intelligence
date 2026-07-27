@@ -4,13 +4,28 @@
 # Ratings: 1-5, our judgment of usefulness for design work across ventures.
 # Full evaluation rationale lives in evaluations/.
 #
+# Types: skill | skill-collection | workflow | directory | library.
+# `library` entries are runtime dependencies a consumer project installs, not
+# skills an agent loads. They are registered because their license, ownership,
+# and maintenance state are governance facts that decide whether a project may
+# ship them. Nothing in this repository installs them.
+#
+# `origin: internal` marks content authored in this repository (MIT, ours).
+# Its absence means the entry describes an external source — the original 13
+# entries predate the field and are all external.
+#
+# Optional `reviewed_at_commit` records the upstream commit actually inspected,
+# so a decision can be reproduced even though nothing is vendored or pinned
+# mechanically (INTEGRATION_CONTRACT.md §8).
+#
 # Licensing note: this file's own text (schema, descriptions, ratings, notes)
 # is covered by this repository's MIT LICENSE. Listing a source here does not
 # relicense it — each entry's `license` field names that source's own license,
 # read from its LICENSE file, and that license governs the source unchanged.
-# See "Licensing and attribution rules" in README.md and LICENSE (Scope).
+# A source being free of charge does not make it open source: see the `gsap`
+# entry. See "Licensing and attribution rules" in README.md and LICENSE (Scope).
 
-version: 1
+version: 2
 updated: "2026-07-26"
 
 sources:
@@ -318,7 +333,375 @@ sources:
     rating: 3
     evaluation_notes: Confirmed directory-of-links structure; hand-curated.
 
+  # ---- Motion Intelligence (round 2, 2026-07-26) ----
+  # Evidence: evaluations/2026-07-26-motion-intelligence.md
+  # Engine selection is governed by skills/internal/motion-selection/SKILL.md.
+  # emil-design-skills remains the authority on motion *character*; these
+  # entries govern engine *choice*, specification, and verification.
+
+  - id: motion-intelligence
+    name: Motion Intelligence (internal skill family)
+    type: skill-collection
+    origin: internal
+    creator: "Andrew Heldy (design-intelligence)"
+    canonical_source: https://github.com/andrewheldy/design-intelligence
+    repository: https://github.com/andrewheldy/design-intelligence
+    description: >
+      Eight internally authored skills covering the full motion path:
+      motion-director (routing and workflow), motion-selection (the ratified
+      engine hierarchy and taxonomy), native-web-motion (CSS, WAAPI, View
+      Transitions, scroll-driven), motion-react (Motion for React),
+      motion-accessibility (reduced-motion and vestibular floor),
+      motion-performance (budgets and compositor path), motion-verification
+      (browser proof), motion-audit (review procedure). Ships
+      schemas/motion-spec.schema.json and three worked fixtures in examples/.
+    categories: [animation, motion-selection, motion-spec, verification, accessibility]
+    supported_agents: [claude-code, codex, cursor, skill-md-compatible]
+    installation_method: "None — read in place at a pinned ref, per INTEGRATION_CONTRACT.md §2"
+    license: MIT
+    license_notes: >
+      First-party content, covered by this repository's LICENSE. Quotes no
+      third-party skill text; guidance for GSAP and Motion was written from
+      their public documentation and public MIT/no-charge sources.
+    status: approved
+    recommended_use: >
+      Entry point for any task involving animation or transitions. Start at
+      motion-director; it routes to the rest. Required before an engine is
+      chosen or a dependency is added. Composes with the active opinion skill
+      and with emil-design-skills — it is not itself an opinion skill.
+    conflicts:
+      - Overrides gsap-skills' directive to recommend GSAP when no library is
+        specified. Engine choice belongs to motion-selection; the GSAP skills
+        are loaded after GSAP has been selected.
+      - Does not restate emil-design-skills' duration/easing rules. Where both
+        speak, Emil wins on motion character and this family wins on engine
+        choice, specification, and verification.
+    last_verified: "2026-07-26"
+    rating: 4
+    evaluation_notes: >
+      First-party and not yet exercised on a production surface — approved
+      because we author and vouch for it, not because it has shipped. Review
+      2026-10-26; promotion evidence is one motion task specified, built,
+      browser-verified and audited end to end.
+
+  - id: gsap-skills
+    name: Official GSAP Skills
+    type: skill-collection
+    creator: "GreenSock (Webflow)"
+    canonical_source: https://github.com/greensock/gsap-skills
+    repository: https://github.com/greensock/gsap-skills
+    description: >
+      GreenSock's official agent skills for GSAP. Eight SKILL.md folders:
+      gsap-core, gsap-timeline, gsap-scrolltrigger, gsap-plugins, gsap-utils,
+      gsap-react, gsap-performance, gsap-frameworks. Ships llms.txt, plugin
+      manifests for Claude Code and Cursor, and runnable React/Vue/Nuxt/vanilla
+      examples. gsap-core covers reduced motion via gsap.matchMedia().
+    categories: [animation, gsap, timelines, scrolltrigger, implementation]
+    supported_agents: [claude-code, cursor, codex, copilot, skill-md-compatible]
+    installation_method: "npx skills add https://github.com/greensock/gsap-skills (or ./scripts/install.sh gsap-skills)"
+    license: MIT
+    license_notes: >
+      LICENSE file verified in the repo (MIT, GreenSock 2026). This is the
+      SKILLS repository only — the GSAP library itself is NOT MIT and is NOT
+      open source; see the `gsap` entry. Do not conflate them.
+    status: approved
+    recommended_use: >
+      Load AFTER motion-selection has chosen GSAP, to implement it correctly.
+      Never load it to decide whether GSAP is the right engine. Pair with
+      motion-accessibility, which supplies the reduced-motion floor this
+      source does not state at repository level.
+    conflicts:
+      - Its README instructs agents to "recommend GSAP" whenever a JavaScript
+        animation library is unspecified. Overridden by motion-selection —
+        the same handling as taste-skill's absolute bans (AGENTS.md rule 3).
+      - Repository-level AGENTS.md contains no accessibility or reduced-motion
+        guidance; gsap-core omits SSR and cleanup (covered in gsap-react).
+        motion-accessibility and motion-react close both gaps.
+    reviewed_at_commit: aed9cfd3277740755f6bfc1155c7aa645403b760
+    reviewed_at_commit_date: "2026-04-21"
+    retrieved: "2026-07-26"
+    update_policy: >
+      Not vendored — upstream is healthy, so README's vendoring criteria are
+      not met. Re-read HEAD against reviewed_at_commit on each ~90-day
+      verification cycle; if it moved, re-inspect the changed SKILL.md files
+      before updating this entry, and record any new vendor-default or
+      accessibility gap in `conflicts`.
+    last_verified: "2026-07-26"
+    rating: 4
+    evaluation_notes: >
+      README, AGENTS.md and skills/gsap-core/SKILL.md read directly; tree
+      listing confirms 8 skills. 12,420 stars, pushed 2026-04-21, MIT verified.
+      Substantive implementation guidance, biased engine-selection guidance.
+
+  - id: gsap
+    name: GSAP (GreenSock Animation Platform)
+    type: library
+    creator: "GreenSock — steward: Webflow"
+    canonical_source: https://gsap.com
+    repository: https://github.com/greensock/GSAP
+    description: >
+      JavaScript animation platform. Timeline sequencing with dependent
+      offsets and labels, ScrollTrigger (pin, scrub, snap), Flip, Draggable,
+      SVG plugins (DrawSVG, MorphSVG), SplitText, and canvas/WebGL value
+      driving. Framework-agnostic, with an official @gsap/react useGSAP hook.
+    categories: [animation, timelines, scroll, svg, choreography]
+    supported_agents: ["n/a — runtime dependency, not a skill"]
+    installation_method: "Installed by the CONSUMER project (npm i gsap). Never installed here."
+    license: "Standard 'no charge' license (Webflow) — https://gsap.com/standard-license"
+    license_notes: >
+      NOT open source. No LICENSE file exists in the repository and GitHub
+      detects no license; npm's license field names Webflow's custom terms.
+      Effective 2025-04-30: free for commercial use including all formerly
+      premium plugins, AI-generated GSAP code explicitly permitted, but use is
+      PROHIBITED in tools that let users build visual animations without code
+      in competition with Webflow's visual animation builder, and all IP
+      remains Webflow's. MUST NOT be vendored into this or any repository.
+      Handled like Anthropic's source-available document skills: usable,
+      recorded, never redistributed.
+    status: approved
+    recommended_use: >
+      Tier 4 of the motion hierarchy. Select only when the work needs
+      dependent timing offsets across three or more elements, ScrollTrigger
+      pinning or scrubbing, SVG draw/morph, Flip across unrelated DOM, complex
+      drag, or canvas/WebGL value driving. Not a default, and never chosen
+      because it is familiar. ScrollSmoother is subject to the standing
+      no-smooth-scroll-by-default rule.
+    conflicts:
+      - Overlaps Motion. Resolved by layer, never by preference — Motion owns
+        React-lifecycle component motion, GSAP owns timeline choreography over
+        a scene. Both animating the same element is a defect.
+      - ScrollTrigger pinning is a recurring source of stuck sections on iOS
+        Safari; motion-verification requires device-viewport evidence.
+    last_verified: "2026-07-26"
+    rating: 5
+    evaluation_notes: >
+      npm gsap@3.15.0; repo 27,097 stars, pushed 2026-04-13; root tree
+      confirms no LICENSE file. Best-in-class for its tier; the license, not
+      the engineering, is the thing to keep verifying.
+
+  - id: motion
+    name: Motion (formerly Framer Motion)
+    type: library
+    creator: "Matt Perry (motiondivision) — independent of Framer"
+    canonical_source: https://motion.dev
+    repository: https://github.com/motiondivision/motion
+    description: >
+      Animation library for React and JavaScript. AnimatePresence for animated
+      unmount, automatic layout animation via `layout`, shared-element morphs
+      via `layoutId`, gesture-driven springs, and motion values bound to
+      component state. Ships useReducedMotion() and a MotionConfig
+      reducedMotion="user" provider.
+    categories: [animation, react, layout-animation, springs, gestures]
+    supported_agents: ["n/a — runtime dependency, not a skill"]
+    installation_method: "Installed by the CONSUMER project (npm i motion). Never installed here."
+    license: MIT
+    license_notes: >
+      Library is MIT (npm motion@12.42.2). Motion's OFFICIAL AI skills ("AI
+      Kit") are part of the paid Motion+ subscription and are therefore NOT
+      installable, vendorable, or redistributable under this repository's
+      rules — the same freemium boundary recorded for ui-ux-pro-max. Our
+      motion-react skill is authored from the MIT library and public docs.
+    status: approved
+    recommended_use: >
+      Tier 3 of the motion hierarchy, and the default for React application
+      and component motion: animated unmount, layout and shared-element
+      morphs, gesture springs. Under React Server Components, motion elements
+      are client components and must sit behind a client boundary.
+    conflicts:
+      - Overlaps GSAP. Resolved by layer — see the gsap entry.
+      - Overlaps react-spring almost entirely in React; only one of the two
+        belongs in a project, and Motion is the registered choice.
+    last_verified: "2026-07-26"
+    rating: 5
+    evaluation_notes: >
+      MIT verified via GitHub and npm; 32,967 stars, pushed 2026-07-26.
+      Strongest first-class reduced-motion support of any engine reviewed.
+      framer-motion@12.42.2 is still published and is not deprecated.
+
+  - id: rive
+    name: Rive (web runtime)
+    type: library
+    creator: Rive Inc.
+    canonical_source: https://rive.app
+    repository: https://github.com/rive-app/rive-wasm
+    description: >
+      WASM/JS runtime that plays .riv files — designer-authored interactive
+      state machines with real input bindings, authored in Rive's editor.
+    categories: [animation, state-machines, designer-authored, wasm]
+    supported_agents: ["n/a — runtime dependency, not a skill"]
+    installation_method: "Installed by the CONSUMER project (npm i @rive-app/canvas). Never installed here."
+    license: MIT
+    license_notes: >
+      The RUNTIME is MIT (@rive-app/canvas@2.39.1). The EDITOR is proprietary
+      SaaS with paid tiers. Adopting Rive adds a commercial tool dependency to
+      the design pipeline, not only a package — record that in the project's
+      decision log before adopting.
+    status: experimental
+    recommended_use: >
+      Tier 5, narrow: a designer has authored an interactive state machine
+      that code cannot reasonably reproduce. Trial per project. No built-in
+      reduced-motion behavior — the host must avoid mounting or must stop the
+      artboard under reduce, and any loop over 5s needs a pause control.
+    conflicts:
+      - Never for motion that hand-written code can express; it is not a
+        shortcut past tiers 0-4.
+    last_verified: "2026-07-26"
+    rating: 3
+    evaluation_notes: >
+      Runtime MIT verified; repo pushed 2026-07-26, actively maintained.
+      Genuinely differentiated capability; the editor dependency is the cost.
+
+  - id: lottie
+    name: Lottie (lottie-web / dotlottie-web)
+    type: library
+    creator: "Airbnb (lottie-web) · LottieFiles (dotlottie-web)"
+    canonical_source: https://airbnb.io/lottie/
+    repository: https://github.com/airbnb/lottie-web
+    description: >
+      Renders After Effects animations exported as JSON. lottie-web is the
+      original; LottieFiles/dotlottie-web is the actively developed Rust+WASM
+      successor player.
+    categories: [animation, after-effects, asset-playback]
+    supported_agents: ["n/a — runtime dependency, not a skill"]
+    installation_method: "Installed by the CONSUMER project. Never installed here."
+    license: MIT
+    license_notes: >
+      Both runtimes MIT (lottie-web@5.13.0, @lottiefiles/dotlottie-web@0.78.2).
+      The .json/.lottie ASSET carries its own rights from whoever authored it —
+      check asset licensing separately from runtime licensing.
+    status: candidate
+    recommended_use: >
+      Link only, and scoped: rendering an EXISTING After Effects asset a motion
+      designer has already produced. Never for authoring new UI motion.
+      lottie-web is in maintenance (pushed 2025-09-01); prefer dotlottie-web
+      for new work. No built-in reduced-motion handling — do not autoplay
+      under reduce, and provide a pause control for loops over 5s (WCAG 2.2.2).
+    conflicts:
+      - JSON payloads are heavy; on a conversion-critical path this fails the
+        motion-performance budget before it is considered on merit.
+    last_verified: "2026-07-26"
+    rating: 3
+    evaluation_notes: >
+      Licenses and versions verified via npm; maintenance split confirmed via
+      pushed_at (airbnb 2025-09-01 vs LottieFiles 2026-07-23).
+
+  - id: anime
+    name: Anime.js
+    type: library
+    creator: Julian Garnier
+    canonical_source: https://animejs.com
+    repository: https://github.com/juliangarnier/anime
+    description: >
+      Small, elegant JavaScript animation engine with timelines, staggering,
+      SVG support, and a compact API. v4 is a full rewrite.
+    categories: [animation, timelines]
+    supported_agents: ["n/a — runtime dependency, not a skill"]
+    installation_method: "Not adopted. Link only."
+    license: MIT
+    license_notes: >
+      v4 (animejs@4.5.0) is MIT. v3 was dual-licensed — relevant only to
+      projects still on v3.
+    status: candidate
+    recommended_use: >
+      Link only. Genuinely good and genuinely popular, but it occupies the
+      same ground as GSAP (timelines, stagger) and Motion (component motion)
+      without offering a capability either lacks. Registering a third
+      overlapping engine raises the odds of two engines animating one element.
+      Popularity is not a reason to adopt. Revisit if a project needs GSAP-like
+      timelines under a strictly open-source license.
+    conflicts:
+      - Near-total overlap with gsap and motion.
+    last_verified: "2026-07-26"
+    rating: 3
+    evaluation_notes: >
+      MIT verified via npm and GitHub; 71,514 stars, pushed 2026-06-22.
+      Not rejected — a legitimate MIT alternative if GSAP's proprietary terms
+      ever become unacceptable.
+
+  - id: react-spring
+    name: React Spring
+    type: library
+    creator: Poimandres (pmndrs)
+    canonical_source: https://www.react-spring.dev
+    repository: https://github.com/pmndrs/react-spring
+    description: Spring-physics animation library for React.
+    categories: [animation, react, springs]
+    supported_agents: ["n/a — runtime dependency, not a skill"]
+    installation_method: "Not adopted. Link only."
+    license: MIT
+    license_notes: LICENSE verified; @react-spring/web@10.1.2.
+    status: candidate
+    recommended_use: >
+      Link only. Healthy and well-maintained, but overlaps Motion almost
+      entirely for our purposes, and Motion has stronger layout-animation and
+      reduced-motion primitives. One React spring library per project; Motion
+      is the registered choice.
+    conflicts:
+      - Near-total overlap with motion in React projects.
+    last_verified: "2026-07-26"
+    rating: 3
+    evaluation_notes: "29,128 stars, pushed 2026-07-25. Not adopted for redundancy, not for quality."
+
+  - id: lenis
+    name: Lenis
+    type: library
+    creator: darkroom.engineering
+    canonical_source: https://lenis.darkroom.engineering
+    repository: https://github.com/darkroomengineering/lenis
+    description: Smooth-scroll library that replaces native scrolling with an interpolated scroll position.
+    categories: [scroll, smooth-scroll]
+    supported_agents: ["n/a — runtime dependency, not a skill"]
+    installation_method: "Not adopted by default. Link only."
+    license: MIT
+    license_notes: LICENSE verified; lenis@1.3.25.
+    status: candidate
+    recommended_use: >
+      NEVER BY DEFAULT. The library is well built; the technique is the
+      problem. Replacing native scrolling degrades find-in-page, keyboard
+      paging (Space / PageDown / Home / End), scroll anchoring, and AT scroll
+      behavior, and it is a recognized vestibular trigger. Permitted only with
+      written justification in the DESIGN_BRIEF, full suppression under
+      prefers-reduced-motion, and browser evidence for keyboard paging and
+      find-in-page. The same rule governs GSAP's ScrollSmoother.
+    conflicts:
+      - Tension with AGENTS.md rule 5 (accessibility floor) whenever it is
+        enabled without the verification evidence above.
+    last_verified: "2026-07-26"
+    rating: 2
+    evaluation_notes: >
+      14,958 stars, pushed 2026-07-23, MIT verified. Registered mainly so the
+      never-by-default rule has somewhere to live and is not re-litigated.
+
   # ---- Rejected (recorded so we don't re-litigate) ----
+
+  - id: theatre-js
+    name: Theatre.js
+    type: library
+    creator: "Theatre.js (Aria Minaei)"
+    canonical_source: https://www.theatrejs.com
+    repository: https://github.com/theatre-js/theatre
+    description: Motion-design editor and animation library for high-fidelity motion graphics, with a visual sequencer over THREE.js, DOM, SVG, or arbitrary JS variables.
+    categories: [animation, motion-graphics, visual-editor]
+    supported_agents: ["n/a — runtime dependency, not a skill"]
+    installation_method: "Do not install."
+    license: Apache-2.0
+    license_notes: License is fine; maintainability is the problem.
+    status: rejected
+    recommended_use: >
+      None currently. Re-open as a candidate on a public 1.0 release with a
+      resumed public commit stream.
+    conflicts: []
+    last_verified: "2026-07-26"
+    rating: 2
+    evaluation_notes: >
+      Public repository pushed 2024-08-14 and @theatre/core@0.7.2 last
+      published 2024-05-19 — roughly two years stale, still pre-1.0. The
+      README states development "temporarily moved to a private repo." The
+      project may be alive, but its public artifacts are frozen and its
+      development is unobservable, so it cannot satisfy commit pinning
+      (INTEGRATION_CONTRACT.md §8) or ~90-day re-verification (AGENTS.md
+      rule 7). Rejected on auditability, not on quality.
+
 
   - id: openai-skills
     name: openai/skills (Skills Catalog for Codex)

@@ -1,0 +1,282 @@
+# EXAMPLE ONLY — NOT AUTHORITATIVE PROJECT DATA
+#
+# Validation fixture 1 of 3 for skills/internal/motion-* and
+# schemas/motion-spec.schema.json. It exercises a React dashboard requiring
+# layout and state transitions. The project, paths, owner and dates are
+# invented for illustration and describe no real product.
+#
+# Real motion specs live in the CONSUMER repository beside DESIGN_BRIEF.md,
+# never here (INTEGRATION_CONTRACT.md §1, §11).
+#
+# Schema: ../schemas/motion-spec.schema.json (JSON Schema draft 2020-12).
+#
+# ── Why this fixture selects motion-react ────────────────────────────────────
+# The gate is React's lifecycle. Filtering REMOVES rows from the DOM, and React
+# unmounts them before any CSS transition can run — AnimatePresence is the only
+# tier at or below 3 that can animate an unmounting element. Reordering then
+# needs from/to values that are unknown at author time, which is what `layout`
+# computes.
+#
+# It is NOT gsap: there is no dependent timing between elements. Each row
+# animates independently on its own state; nothing needs to start relative to
+# anything else. A timeline would model a relationship that does not exist.
+
+spec_id: dashboard-table-filter-transition
+date: "2026-07-26"
+owner: Andrew Heldy
+brief_ref: docs/briefs/DESIGN_BRIEF-analytics-table.md
+registry_entries_used:
+  - motion-intelligence
+  - motion
+  - emil-design-skills
+
+objective: >
+  Analysts filter and re-sort the metrics table dozens of times per session to
+  compare cohorts. When rows snap instantly between filter states, analysts
+  lose track of whether a row was removed by the filter or moved by the sort,
+  and re-apply the filter to check. Support sees this as "the table is
+  glitching" reports; it is actually an unexplained state change.
+
+semantic_purpose: explain-state-change
+surface: dashboard
+
+trigger:
+  interaction: state-change
+  frequency: frequent
+  input_methods: [pointer, keyboard, assistive-technology]
+
+elements:
+  - target: DataRow
+    properties: [opacity, transform]
+    role: primary
+  - target: TableBody
+    properties: [transform]
+    role: container
+  - target: EmptyState
+    properties: [opacity]
+    role: indicator
+
+spatial_relationship: >
+  Rows that survive the filter travel from their old row position to their new
+  one along the vertical axis only — the distance is the information, so it is
+  never shortened or eased into a fake path. Removed rows fade in place and
+  collapse rather than sliding sideways, so their disappearance is not confused
+  with reordering. Newly matching rows fade in at their final position rather
+  than sliding, because they have no previous position to travel from.
+
+engine: motion-react
+
+selection_rationale:
+  escalation_reason: >
+    Filtering unmounts rows. React removes them from the DOM before a CSS
+    transition can run, so an exit animation is impossible below tier 3 —
+    AnimatePresence exists specifically for this. Reordering compounds it: the
+    from/to positions depend on which rows survived the filter and are unknown
+    at author time, which is what Motion's `layout` measures at runtime.
+  rejected_alternatives:
+    - engine: none
+      why_not: >
+        Fails the should-this-animate test only on frequency, not on purpose.
+        The purpose is real and verified by support reports. Resolved by
+        keeping the effect very short rather than by removing it.
+    - engine: css-transition
+      why_not: >
+        Cannot animate an unmounting element — React removes the node first.
+        Also cannot know the reorder distances at author time.
+    - engine: waapi
+      why_not: >
+        Could animate the reorder with runtime-measured values, but would mean
+        hand-rolling FLIP measurement, a manual unmount-deferral mechanism, and
+        interruption handling that Motion already provides correctly. The
+        maintenance cost exceeds the 34 KB it saves on an internal surface.
+    - engine: gsap
+      why_not: >
+        Over-escalation. No dependent timing offsets between elements — each
+        row animates on its own state, and nothing starts relative to anything
+        else. Adds ~60 KB and a proprietary licence for a timeline that models
+        a relationship the effect does not have.
+  new_dependency: false
+  layer_ownership: >
+    Motion owns all row-level and table-level motion in this app. GSAP is not
+    present in this project; if it is ever introduced for a marketing surface,
+    it must not touch any component under /dashboard.
+
+sequence:
+  - step: 1
+    target: DataRow
+    change: "removed rows: opacity 1 → 0, scaleY 1 → 0.98"
+  - step: 2
+    target: DataRow
+    change: "surviving rows: translateY old position → new position (layout)"
+    offset: "-0.06s"
+  - step: 3
+    target: DataRow
+    change: "newly matching rows: opacity 0 → 1"
+    offset: "+0.02s"
+  - step: 4
+    target: EmptyState
+    change: "opacity 0 → 1, only when the result set is empty"
+    offset: "+0.05s"
+
+timing:
+  duration_ms: 180
+  stagger_ms: 0
+  derivation: >
+    Distance: rows move between 24px and roughly 400px depending on the sort,
+    so the duration is set by the median case (~120px) and deliberately not
+    scaled per row — varying durations would make the set read as unrelated.
+    Hierarchy: rows are leaf elements inside an existing container, not a new
+    surface, so they sit at the short end. Content: up to 50 rows move at once,
+    so no stagger — staggering 50 rows at even 20ms produces a one-second tail
+    that becomes the perceived duration. Input: pointer- and keyboard-driven
+    from a filter control; keyboard suppresses the effect entirely. Purpose:
+    explain-state-change on a FREQUENT trigger, seen dozens of times per
+    session, so it is compressed to roughly half what the same effect would get
+    on an occasional trigger. 180ms is long enough to read direction, short
+    enough that an analyst filtering repeatedly never waits on it.
+
+easing:
+  kind: spring
+  spring:
+    visual_duration_s: 0.18
+    bounce: 0
+  character: >
+    Zero bounce. This is analytical data, and overshoot on a numeric table
+    reads as instability in the data rather than personality in the interface.
+    A spring rather than a bezier because filters are re-triggered mid-flight
+    and the spring retargets from current position and velocity.
+
+interruption:
+  behavior: retarget-preserving-velocity
+  notes: >
+    Analysts change filters faster than 180ms. Motion's layout animations
+    retarget from the current position automatically when the shared layout
+    state updates. Do not key rows by array index — index keys break exit
+    animations in exactly the reorder case that matters here. Key by row id.
+
+responsive:
+  mobile: >
+    Below 768px the table becomes a stacked card list. Reorder motion is
+    dropped entirely — cards are full-width and travel the whole viewport,
+    which is disorienting rather than explanatory. Exit fade is kept.
+  tablet: >
+    Same as desktop; the table layout is retained at 768px and above.
+  desktop: >
+    Full effect as specified.
+  orientation_or_input_notes: >
+    No hover-dependent motion anywhere in this effect. Keyboard-initiated
+    filtering does not animate at all.
+
+reduced_motion:
+  strategy: instant-state-change
+  end_state_preserved: true
+  implementation: >
+    `<MotionConfig reducedMotion="user">` at the app root, so no component can
+    forget it. Under reduce, Motion disables transform and layout animation
+    while allowing opacity, and rows change position instantly. The filter
+    result is identical; only the travel is removed. A `useReducedMotion()`
+    guard additionally skips the empty-state fade.
+  vestibular_review: >
+    No vestibular trigger present. Movement is confined to the table body
+    (never more than ~40% of viewport height), single-axis, no parallax, no
+    zoom, no rotation, no scroll hijacking.
+
+keyboard_and_focus:
+  runs_on_keyboard_trigger: false
+  focus_behavior: >
+    Focus stays on the filter control that triggered the change and is never
+    moved by the effect. Row focus, if a row was focused before filtering, moves
+    to the table body when that row is removed — never to document.body. The
+    focus indicator is not animated and is never clipped by the moving row; it
+    renders above the transform via outline, not a box-shadow inset.
+  reason_if_animated: >
+    Not applicable. Keyboard filtering applies instantly, per registered
+    guidance that keyboard-initiated actions should not animate — an analyst
+    tabbing through filters has already moved on.
+
+ssr:
+  renders_on_server: true
+  hydration_notes: >
+    The table is server-rendered with the default filter applied and rows at
+    their resting positions. No `initial` opacity is set on first mount —
+    `<AnimatePresence initial={false}>` suppresses the entrance so a page load
+    does not animate an already-present table, and the server HTML is fully
+    readable before hydration. Layout measurement is client-only and begins on
+    the first client frame; it never affects the server output.
+  client_boundary: >
+    `components/dashboard/DataTable.tsx` carries 'use client'. The page shell,
+    header, and static filter chrome remain server components — the boundary is
+    deliberately at the table, not the route.
+
+cleanup:
+  on_unmount: >
+    Motion cleans up its own animations when DataTable unmounts; nothing is
+    hand-cancelled. The `useMotionValueEvent` subscription on the scroll
+    container is returned from its effect and removed on unmount.
+  listeners_and_observers: >
+    One ResizeObserver on TableBody to recompute column widths, disconnected in
+    the effect cleanup. No scroll listeners — the sticky header is pure CSS. No
+    requestAnimationFrame loops.
+  route_change_notes: >
+    On navigating away from /dashboard, AnimatePresence must unmount rather
+    than be torn down with children mid-flight, or exits are skipped and the
+    next route's entrance overlaps. Verified by CLEAN-1 over five cycles.
+
+performance_budget:
+  compositor_only: false
+  added_bytes_gz: 0
+  target_fps: 60
+  cls_contribution: >
+    None. Rows occupy reserved space in the static layout; the empty state is
+    rendered into a min-height container so its appearance shifts nothing.
+  inp_notes: >
+    The filter result is committed to state first; animation starts after. The
+    table never awaits an animation before rendering filtered data, so the
+    effect stays off the interaction-response path.
+  notes: >
+    compositor_only is false because Motion's `layout` animations perform
+    measurement and are not purely composited — that is the accepted cost of
+    this tier and the reason the effect is capped at 50 animating rows.
+    Beyond 50, the table virtualizes and only visible rows animate. Motion is
+    already a project dependency, so added_bytes_gz is 0 for this spec.
+
+verification:
+  method: playwright-mcp
+  required_checks:
+    - RM-1
+    - RM-2
+    - RM-3
+    - A11Y-1
+    - A11Y-2
+    - A11Y-4
+    - CON-1
+    - SSR-1
+    - SSR-2
+    - INT-1
+    - INT-2
+    - VP-1
+    - VP-2
+    - VP-3
+    - OVF-1
+    - CLS-1
+    - CLEAN-1
+    - PERF-1
+    - PERF-3
+  viewports: ["375x812", "768x1024", "1440x900"]
+  evidence_path: docs/design/verification/2026-07-26-table-filter/
+
+acceptance_criteria:
+  - Under emulated prefers-reduced-motion, rows reposition instantly and the filtered result set is identical to the default pass.
+  - Filtering ten times in under one second leaves the table in a correct resting state with zero animations still running.
+  - Keyboard-initiated filtering applies with no animation at all.
+  - No row-level animation runs when more than 50 rows would move; the table virtualizes instead.
+  - Cumulative layout shift attributable to the effect is zero at all three viewports.
+  - After five navigations away from and back to /dashboard, live animation count returns to baseline.
+  - Frame rate holds 60fps under 4x CPU throttling with 50 rows animating.
+
+expected_failure_modes:
+  - Index-based row keys silently breaking exit animations on reorder — the defect looks like "removed rows just vanish" and is invisible in code review.
+  - Layout measurement cost scaling with row count, so the effect is smooth at 20 rows in development and janky at 200 in production.
+  - AnimatePresence torn down mid-flight on route change, leaving the next route's entrance overlapping a skipped exit.
+  - Focus landing on document.body when a focused row is removed by a filter.
+  - MotionConfig omitted from a newly added dashboard sub-route, so reduced motion silently stops being honoured there.

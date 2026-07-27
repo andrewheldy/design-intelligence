@@ -1,0 +1,447 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/andrewheldy/design-intelligence/schemas/motion-spec.schema.json",
+  "title": "Motion specification",
+  "description": "A single motion effect, specified before it is implemented. Produced by skills/internal/motion-director and skills/internal/motion-selection; consumed by the implementation skills, by motion-verification, and by motion-audit. Motion specs live in the CONSUMER repository alongside the DESIGN_BRIEF, never here — the files under examples/ are illustrative fixtures only. One spec describes one effect: a modal that opens and a list that reorders are two specs.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "spec_id",
+    "date",
+    "owner",
+    "objective",
+    "semantic_purpose",
+    "surface",
+    "trigger",
+    "elements",
+    "spatial_relationship",
+    "engine",
+    "selection_rationale",
+    "sequence",
+    "timing",
+    "easing",
+    "interruption",
+    "responsive",
+    "reduced_motion",
+    "keyboard_and_focus",
+    "ssr",
+    "cleanup",
+    "performance_budget",
+    "verification",
+    "acceptance_criteria"
+  ],
+  "properties": {
+    "spec_id": {
+      "type": "string",
+      "description": "Stable slug, unique within the project. e.g. 'dashboard-panel-expand'.",
+      "pattern": "^[a-z0-9][a-z0-9-]{1,62}[a-z0-9]$"
+    },
+    "date": {
+      "type": "string",
+      "description": "Date the spec was written (YYYY-MM-DD). Absolute, never relative.",
+      "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+    },
+    "owner": {
+      "type": "string",
+      "description": "Person accountable for this motion decision.",
+      "minLength": 1
+    },
+    "brief_ref": {
+      "type": "string",
+      "description": "Repo-relative path to the DESIGN_BRIEF.md this spec implements. Motion without a brief is motion without a reason."
+    },
+    "registry_entries_used": {
+      "type": "array",
+      "description": "registry.yaml ids relied on, e.g. ['motion-intelligence','motion','emil-design-skills']. Every engine used MUST appear here, and MUST be approved or experimental at the reviewed ref.",
+      "uniqueItems": true,
+      "items": { "type": "string", "pattern": "^[a-z0-9][a-z0-9-]*$" }
+    },
+
+    "objective": {
+      "type": "string",
+      "description": "The user or product outcome this motion serves, in the user's terms. 'Users lose track of which row expanded' is an objective; 'add a nice animation' is not.",
+      "minLength": 20
+    },
+    "semantic_purpose": {
+      "type": "string",
+      "description": "What the motion communicates. See motion-selection/references/motion-taxonomy.md. 'decorative' is a legal value and is a strong signal to reconsider tier 0 — it must be paired with an explicit justification in selection_rationale.",
+      "enum": [
+        "orient",
+        "reveal-relationship",
+        "confirm-action",
+        "explain-state-change",
+        "direct-attention",
+        "express-brand",
+        "decorative"
+      ]
+    },
+    "surface": {
+      "type": "string",
+      "description": "Surface class. Drives the performance budget and the restraint expected.",
+      "enum": [
+        "marketing",
+        "editorial",
+        "product-ui",
+        "dashboard",
+        "conversion-flow",
+        "mobile-app",
+        "internal-tool"
+      ]
+    },
+    "trigger": {
+      "type": "object",
+      "description": "What starts the motion, and how often a user encounters it. Frequency is the first input to the should-this-animate test.",
+      "additionalProperties": false,
+      "required": ["interaction", "frequency"],
+      "properties": {
+        "interaction": {
+          "type": "string",
+          "enum": [
+            "page-load",
+            "route-change",
+            "hover",
+            "focus",
+            "click-or-tap",
+            "scroll",
+            "drag",
+            "state-change",
+            "data-arrival",
+            "timer"
+          ]
+        },
+        "frequency": {
+          "type": "string",
+          "description": "How often one user triggers this. 'constant' and 'frequent' bias hard toward tier 0 or a very short tier 1 effect (AGENTS.md-registered Emil rule: the more often it is triggered, the less it should move).",
+          "enum": ["constant", "frequent", "occasional", "rare", "once-per-session"]
+        },
+        "input_methods": {
+          "type": "array",
+          "description": "Input methods that reach this trigger. If 'keyboard' is present, keyboard_and_focus MUST address whether the motion runs at all.",
+          "uniqueItems": true,
+          "items": { "type": "string", "enum": ["pointer", "touch", "keyboard", "assistive-technology", "programmatic"] }
+        }
+      }
+    },
+    "elements": {
+      "type": "array",
+      "description": "The elements that move, described so a reviewer can find them. Selector or component name plus the properties animated.",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["target", "properties"],
+        "properties": {
+          "target": { "type": "string", "minLength": 1, "description": "Component name or CSS selector." },
+          "properties": {
+            "type": "array",
+            "description": "Animated properties. Anything outside transform/opacity/filter must be justified in performance_budget — it leaves the compositor path.",
+            "minItems": 1,
+            "items": { "type": "string" }
+          },
+          "role": {
+            "type": "string",
+            "description": "This element's part in the effect.",
+            "enum": ["primary", "supporting", "container", "backdrop", "indicator"]
+          }
+        }
+      }
+    },
+    "spatial_relationship": {
+      "type": "string",
+      "description": "Where the motion comes from and goes to, in space. 'Scales from the trigger button's center' or 'slides from the right edge, the direction it will return to'. Motion that appears from nowhere disorients; transform-origin lives here.",
+      "minLength": 15
+    },
+
+    "engine": {
+      "type": "string",
+      "description": "The selected implementation. Tier order is defined in motion-selection/SKILL.md: none < css < waapi/view-transitions/scroll-driven < motion-react < gsap < specialist runtimes.",
+      "enum": [
+        "none",
+        "css-transition",
+        "css-keyframes",
+        "waapi",
+        "view-transitions",
+        "css-scroll-driven",
+        "motion-react",
+        "gsap",
+        "rive",
+        "lottie"
+      ]
+    },
+    "selection_rationale": {
+      "type": "object",
+      "description": "Why this tier and not the one below it. The escalation gate is the load-bearing field — an unjustified escalation is an audit finding.",
+      "additionalProperties": false,
+      "required": ["escalation_reason", "rejected_alternatives"],
+      "properties": {
+        "escalation_reason": {
+          "type": "string",
+          "description": "What the tier below cannot do. 'The list items unmount and React removes them before CSS can animate' is a reason; 'Motion is nicer' is not.",
+          "minLength": 25
+        },
+        "rejected_alternatives": {
+          "type": "array",
+          "description": "Every lower tier considered, and why it was insufficient. A spec choosing gsap with an empty list has not made a decision.",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["engine", "why_not"],
+            "properties": {
+              "engine": { "type": "string" },
+              "why_not": { "type": "string", "minLength": 10 }
+            }
+          }
+        },
+        "new_dependency": {
+          "type": "boolean",
+          "description": "True if this spec adds a package the project does not already ship. If true, performance_budget.added_bytes_gz is required in review."
+        },
+        "layer_ownership": {
+          "type": "string",
+          "description": "Required when a project runs both Motion and GSAP: which layer this engine owns here. Two engines animating one element is a defect."
+        }
+      }
+    },
+
+    "sequence": {
+      "type": "array",
+      "description": "Ordered steps. A single-step effect has one entry. Offsets express dependency between steps and are the reason timelines exist.",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["step", "target", "change"],
+        "properties": {
+          "step": { "type": "integer", "minimum": 1 },
+          "target": { "type": "string", "description": "Which element (matches an elements[].target)." },
+          "change": { "type": "string", "description": "From → to, concretely. 'opacity 0 → 1, translateY 8px → 0'." },
+          "offset": { "type": "string", "description": "Start time relative to the previous step or a label, e.g. '-0.1s' (overlap) or '+0.05s'." }
+        }
+      }
+    },
+    "timing": {
+      "type": "object",
+      "description": "Durations and delays, WITH their derivation. A bare number is not a specification. Timing is a function of distance travelled, hierarchy depth, content amount, input method, and purpose — there is no universal correct duration, and this schema deliberately refuses to imply one.",
+      "additionalProperties": false,
+      "required": ["duration_ms", "derivation"],
+      "properties": {
+        "duration_ms": {
+          "type": "number",
+          "description": "Total perceived duration of the effect in milliseconds.",
+          "exclusiveMinimum": 0
+        },
+        "delay_ms": { "type": "number", "minimum": 0, "description": "Delay before the effect starts." },
+        "stagger_ms": { "type": "number", "minimum": 0, "description": "Per-item offset when the effect applies across a set." },
+        "derivation": {
+          "type": "string",
+          "description": "Why this number and not another, in terms of distance, hierarchy, content, input method, and purpose. e.g. 'Panel travels 340px on a container-level change, so it sits near the top of the sheet range; pointer-initiated, so it can afford presence. Shortened from 400ms because the trigger is frequent.'",
+          "minLength": 40
+        }
+      }
+    },
+    "easing": {
+      "type": "object",
+      "description": "Easing or spring behavior. Named CSS defaults (`ease`, `ease-in`, `linear` for UI) are rejected by the Motion Reviewer — state a curve or a spring.",
+      "oneOf": [
+        {
+          "additionalProperties": false,
+          "required": ["kind", "curve", "character"],
+          "properties": {
+            "kind": { "const": "cubic-bezier" },
+            "curve": { "type": "string", "description": "e.g. 'cubic-bezier(0.32, 0.72, 0, 1)'.", "pattern": "^cubic-bezier\\(" },
+            "exit_curve": { "type": "string", "description": "Exit curve when it differs from enter — it usually should." },
+            "character": { "type": "string", "description": "What this curve is meant to feel like, and why it suits the purpose.", "minLength": 15 }
+          }
+        },
+        {
+          "additionalProperties": false,
+          "required": ["kind", "spring", "character"],
+          "properties": {
+            "kind": { "const": "spring" },
+            "spring": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "stiffness": { "type": "number" },
+                "damping": { "type": "number" },
+                "mass": { "type": "number" },
+                "bounce": { "type": "number" },
+                "visual_duration_s": { "type": "number" }
+              }
+            },
+            "character": { "type": "string", "minLength": 15 }
+          }
+        },
+        {
+          "additionalProperties": false,
+          "required": ["kind", "stops", "character"],
+          "properties": {
+            "kind": { "const": "linear-stops" },
+            "stops": { "type": "string", "description": "e.g. 'linear(0, 0.25 25%, 1)' — for approximating a spring in pure CSS." },
+            "character": { "type": "string", "minLength": 15 }
+          }
+        }
+      ]
+    },
+    "interruption": {
+      "type": "object",
+      "description": "What happens when the effect is retriggered or reversed mid-flight. Rapid repeated interaction is a required verification step, so this must be decided, not discovered.",
+      "additionalProperties": false,
+      "required": ["behavior"],
+      "properties": {
+        "behavior": {
+          "type": "string",
+          "enum": [
+            "reverse-from-current",
+            "retarget-preserving-velocity",
+            "restart-from-origin",
+            "ignore-until-complete",
+            "cancel-and-snap"
+          ]
+        },
+        "notes": { "type": "string", "description": "Anything the implementer must do to achieve this (kill prior tweens, share a motion value, use a single Animation object)." }
+      }
+    },
+    "responsive": {
+      "type": "object",
+      "description": "How the effect changes across viewports. 'Same everywhere' is a decision and must be stated as one.",
+      "additionalProperties": false,
+      "required": ["mobile", "desktop"],
+      "properties": {
+        "mobile": { "type": "string", "description": "Behavior at ~375px. Long travel distances that read well on desktop often need shortening or removing here.", "minLength": 5 },
+        "tablet": { "type": "string" },
+        "desktop": { "type": "string", "minLength": 5 },
+        "orientation_or_input_notes": { "type": "string", "description": "Touch vs pointer differences, e.g. hover-dependent motion that has no touch equivalent." }
+      }
+    },
+
+    "reduced_motion": {
+      "type": "object",
+      "description": "REQUIRED on every spec, with no null option. prefers-reduced-motion has been Baseline widely available since 2020 — there is no support excuse. The end state must still be reached; reduced motion removes the movement, never the outcome. This field is not overridable by brand or by any skill directive (AGENTS.md rule 5).",
+      "additionalProperties": false,
+      "required": ["strategy", "end_state_preserved", "implementation"],
+      "properties": {
+        "strategy": {
+          "type": "string",
+          "description": "none = the effect is suppressed entirely; opacity-only = movement removed, a short cross-fade remains; instant-state-change = the end state applies with no transition; static-alternative = a non-moving equivalent conveys the same information (e.g. a badge instead of a pulse).",
+          "enum": ["none", "opacity-only", "instant-state-change", "static-alternative"]
+        },
+        "end_state_preserved": {
+          "type": "boolean",
+          "description": "MUST be true. If the end state cannot be reached without the animation, the animation is load-bearing and the design is broken for reduced-motion users.",
+          "const": true
+        },
+        "implementation": {
+          "type": "string",
+          "description": "The concrete mechanism: the media query, useReducedMotion(), MotionConfig, gsap.matchMedia() branch, or the guard that prevents the runtime from mounting.",
+          "minLength": 15
+        },
+        "vestibular_review": {
+          "type": "string",
+          "description": "Required when the effect includes large-area movement, parallax, zoom, spin, or scroll hijacking — the known vestibular triggers. State which is present and how it is neutralized."
+        }
+      }
+    },
+    "keyboard_and_focus": {
+      "type": "object",
+      "description": "Motion must not damage keyboard operation. Focus is not allowed to be lost, hidden, or moved unpredictably by an animation.",
+      "additionalProperties": false,
+      "required": ["focus_behavior", "runs_on_keyboard_trigger"],
+      "properties": {
+        "runs_on_keyboard_trigger": {
+          "type": "boolean",
+          "description": "Whether the effect plays when the action is initiated by keyboard. Registered guidance (emil-design-skills) is that keyboard-initiated actions generally should not animate — a false value here is the expected answer, and true needs a reason."
+        },
+        "focus_behavior": {
+          "type": "string",
+          "description": "Where focus is during and after the effect: moved to the opened surface, returned to the trigger on close, or untouched. Must state that the focus indicator stays visible throughout.",
+          "minLength": 20
+        },
+        "reason_if_animated": { "type": "string", "description": "Required in review when runs_on_keyboard_trigger is true." }
+      }
+    },
+    "ssr": {
+      "type": "object",
+      "description": "Server rendering and hydration. Most motion bugs that only appear in production are hydration bugs.",
+      "additionalProperties": false,
+      "required": ["renders_on_server", "hydration_notes"],
+      "properties": {
+        "renders_on_server": { "type": "boolean" },
+        "hydration_notes": {
+          "type": "string",
+          "description": "The initial server-rendered state, whether it matches the client's first paint, and how a flash of the pre-animation state is avoided. For RSC: which boundary the client component sits behind. For imperative engines: the guard that keeps document/window access off the server.",
+          "minLength": 20
+        },
+        "client_boundary": { "type": "string", "description": "The component that carries the client directive, if applicable." }
+      }
+    },
+    "cleanup": {
+      "type": "object",
+      "description": "What must be torn down, and where. Stale animation instances, orphaned ScrollTriggers, and un-cancelled rAF loops are the most common cause of motion that degrades over a session.",
+      "additionalProperties": false,
+      "required": ["on_unmount", "listeners_and_observers"],
+      "properties": {
+        "on_unmount": { "type": "string", "description": "Concretely: useGSAP scope, gsap.context().revert(), animation.cancel(), observer.disconnect(), or 'nothing — pure CSS'.", "minLength": 8 },
+        "listeners_and_observers": { "type": "string", "description": "Every scroll/resize listener, IntersectionObserver, ResizeObserver, and rAF loop this effect creates, and where each is removed.", "minLength": 8 },
+        "route_change_notes": { "type": "string", "description": "What happens on client-side navigation — especially ScrollTrigger.refresh()/kill() and pinned sections." }
+      }
+    },
+    "performance_budget": {
+      "type": "object",
+      "description": "The cost of this effect, decided before it is paid.",
+      "additionalProperties": false,
+      "required": ["compositor_only", "notes"],
+      "properties": {
+        "compositor_only": {
+          "type": "boolean",
+          "description": "True when only transform/opacity (and filter where accepted) are animated. False requires a justification in notes — animating layout properties forces layout and paint on every frame."
+        },
+        "added_bytes_gz": { "type": "number", "minimum": 0, "description": "Bytes added to the bundle by any new dependency, gzipped. Required when selection_rationale.new_dependency is true." },
+        "target_fps": { "type": "number", "description": "Frame-rate floor the effect must hold on the weakest device in scope.", "default": 60 },
+        "cls_contribution": { "type": "string", "description": "Expected layout-shift contribution. Entrance animations that reserve no space are a CLS regression." },
+        "inp_notes": { "type": "string", "description": "For input-triggered motion: how the effect stays off the interaction-response critical path." },
+        "notes": { "type": "string", "minLength": 10 }
+      }
+    },
+
+    "verification": {
+      "type": "object",
+      "description": "How this effect will be proven in a real browser. Code review is not verification; screenshots are not verification (AGENTS.md-registered reviewer practice and this repository's standing rule).",
+      "additionalProperties": false,
+      "required": ["method", "required_checks"],
+      "properties": {
+        "method": {
+          "type": "string",
+          "enum": ["playwright-mcp", "playwright-script", "manual-browser-walk"]
+        },
+        "required_checks": {
+          "type": "array",
+          "description": "Check ids from skills/internal/motion-verification/references/verification-checklist.md. A spec MUST include every check its trigger and engine make applicable; motion-verification defines the applicability rules.",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": { "type": "string" }
+        },
+        "viewports": {
+          "type": "array",
+          "description": "Viewports actually exercised. Mobile, tablet and desktop are required unless a surface genuinely has one.",
+          "items": { "type": "string" },
+          "default": ["375x812", "768x1024", "1440x900"]
+        },
+        "evidence_path": { "type": "string", "description": "Repo-relative path (in the CONSUMER repo) where the run output and traces are stored." }
+      }
+    },
+    "acceptance_criteria": {
+      "type": "array",
+      "description": "Checkable statements. Each must be objectively pass/fail by someone who did not write the spec. 'Feels smooth' is not a criterion.",
+      "minItems": 2,
+      "items": { "type": "string", "minLength": 15 }
+    },
+    "expected_failure_modes": {
+      "type": "array",
+      "description": "What this specific effect is most likely to get wrong, so verification looks for it deliberately rather than hoping to stumble on it.",
+      "items": { "type": "string" }
+    },
+    "notes": { "type": "string", "description": "Anything else an implementer or reviewer needs. Deliberate deviations from registered guidance belong here, with their reason." }
+  }
+}

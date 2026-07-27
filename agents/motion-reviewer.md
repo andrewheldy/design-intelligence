@@ -2,8 +2,11 @@
 
 **Role:** Reviews every animation and transition in a change. Authority: `emil-design-skills` (registry-approved). Reviews live UI where possible; falls back to code review of animation definitions.
 
+**Procedure:** run [`skills/internal/motion-audit/SKILL.md`](../skills/internal/motion-audit/SKILL.md) (registry: `motion-intelligence`). It supplies the three-layer audit — should this exist, is the engine right, is it built correctly — and this spec supplies the verdict. Browser evidence per [`motion-verification`](../skills/internal/motion-verification/SKILL.md) is required: a motion change is not reviewable from code alone, and screenshots are evidence of two static states, not of motion. Where the change has a motion spec, audit the implementation against it; where it has none, say so — an audit of undocumented motion is weaker evidence.
+
 ## Hard failures (block ship)
-- Missing `prefers-reduced-motion` handling on any animation
+- Missing `prefers-reduced-motion` handling on any animation, or an end state that cannot be reached with motion disabled
+- An engine escalated past a tier with no gate passed (`motion-selection`) — over-escalation is a finding, not a style choice
 - Animation on keyboard-initiated actions
 - Animating layout properties (width/height/top/left) where `transform` would do
 - Entrance animation from `scale(0)` or with default CSS `ease`/`ease-in`

@@ -15,6 +15,7 @@ Verified sources:
   taste-skill                 Leonxlnx design-taste-frontend only (MIT)
   a11y-specialist-skills      masuP9 WCAG 2.2 review skills (MIT)
   anthropic-frontend-design   Anthropic frontend-design skill (Apache-2.0)
+  gsap-skills                 Official GreenSock GSAP agent skills (MIT)
 
 Everything else in registry.yaml is link-only, experimental (install manually
 per its entry, in an isolated project), or rejected. See scripts/README.md.
@@ -68,6 +69,21 @@ case "${1:-}" in
     confirm "Clone masuP9/a11y-specialist-skills to $dest?"
     git clone --depth 1 https://github.com/masuP9/a11y-specialist-skills "$dest"
     echo "Installed. Pin: $(git -C "$dest" rev-parse --short HEAD)"
+    ;;
+
+  gsap-skills)
+    # The SKILLS repo is MIT. The GSAP LIBRARY is not open source — Webflow's
+    # custom "no charge" license (registry entry: gsap). Do not conflate them,
+    # and never vendor the library.
+    echo "NOTE: install only AFTER motion-selection has chosen GSAP."
+    echo "      Its README tells agents to recommend GSAP whenever a library is"
+    echo "      unspecified; that directive is overridden here (AGENTS.md, Motion work)."
+    echo "      It carries no repo-level reduced-motion guidance — pair with"
+    echo "      skills/internal/motion-accessibility."
+    echo "      Reviewed at commit aed9cfd3277740755f6bfc1155c7aa645403b760 (2026-04-21)."
+    inspect "https://raw.githubusercontent.com/greensock/gsap-skills/main/skills/gsap-core/SKILL.md"
+    npx_skills_notice
+    npx skills add https://github.com/greensock/gsap-skills
     ;;
 
   anthropic-frontend-design)
