@@ -26,7 +26,7 @@
 # entry. See "Licensing and attribution rules" in README.md and LICENSE (Scope).
 
 version: 2
-updated: "2026-07-26"
+updated: "2026-08-20"
 
 sources:
   - id: emil-design-skills
@@ -383,6 +383,42 @@ sources:
       because we author and vouch for it, not because it has shipped. Review
       2026-10-26; promotion evidence is one motion task specified, built,
       browser-verified and audited end to end.
+
+  - id: design-intelligence-operating-system
+    name: Design Intelligence Operating System
+    type: skill-collection
+    origin: internal
+    creator: "Andrew Heldy (design-intelligence)"
+    canonical_source: https://github.com/andrewheldy/design-intelligence
+    repository: https://github.com/andrewheldy/design-intelligence
+    description: >
+      First-party operating layer for Design Intelligence project setup and
+      package handoff: an orchestrator skill, registry and integration
+      subagents, agent graph, non-secret connection records, schemas, harness
+      manifests, scenarios, and validation script.
+    categories: [agent-routing, governance, skill-authoring, harness, integration]
+    supported_agents: [claude-code, codex, cursor, gemini-cli, skill-md-compatible]
+    installation_method: "None — read in place at a pinned ref, per INTEGRATION_CONTRACT.md §2"
+    license: MIT
+    license_notes: First-party content, covered by this repository's LICENSE.
+    status: approved
+    recommended_use: >
+      Use for requests that set up, package, validate, or explain the Design
+      Intelligence operating layer. Start at
+      skills/internal/design-intelligence-orchestrator/SKILL.md, then route to
+      registry, integration, design, motion, or harness agents as needed.
+    conflicts:
+      - Does not replace registry.yaml, AGENTS.md, accessibility policy, or
+        the one-opinion-skill rule.
+      - Does not authorize production publishing, credential storage, or
+        external mutation without the approval gates named in connection
+        records.
+    last_verified: "2026-08-20"
+    rating: 4
+    evaluation_notes: >
+      First-party internal governance. See
+      evaluations/2026-08-20-operating-system.md. Approved because the repo
+      owns it and harness/validate.mjs checks its core file relationships.
 
   - id: gsap-skills
     name: Official GSAP Skills

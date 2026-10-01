@@ -1,0 +1,7 @@
+{
+  "id": "frontend-surface",
+  "description": "Build or review a frontend surface under Design Intelligence.",
+  "entry_agent": "design-intelligence-orchestrator",
+  "agents": ["design-director", "design-engineer", "accessibility-reviewer", "mobile-ux-reviewer", "anti-slop-reviewer"],
+  "required_checks": ["one-opinion-skill", "browser-verified", "mobile-overflow-checked", "accessibility-reviewed"]
+}

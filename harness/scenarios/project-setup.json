@@ -1,0 +1,7 @@
+{
+  "id": "project-setup",
+  "description": "Create or update the project operating layer without changing product UI.",
+  "entry_agent": "design-intelligence-orchestrator",
+  "agents": ["registry-curator", "integration-architect", "harness-verifier"],
+  "required_checks": ["registry-entry-present", "evaluation-present", "connection-record-has-no-secrets", "harness-passes"]
+}

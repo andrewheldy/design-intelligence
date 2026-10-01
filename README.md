@@ -27,6 +27,10 @@ docs/                Integration contract, consumer template, HeldyOS bridge,
 schemas/             JSON Schema for a project's connection record and for a
                      motion specification.
 examples/            Illustrative (non-authoritative) filled-in records.
+connections/         Non-secret connector inventory and approval boundaries.
+harness/             Local checks for agent, skill, registry, and connection
+                     coherence.
+deliverables/        Generated briefs, PDFs, HTML sites, and handoff assets.
 ```
 
 The **registry is the product**. Folders hold only what has passed through it.
@@ -76,6 +80,16 @@ The ratified engine hierarchy is **no animation → CSS → native browser APIs 
 
 `emil-design-skills` remains the registered authority on motion *character*. Motion Intelligence decides the *engine*, writes the *specification*, and proves the *result*.
 
+## Operating layer
+
+For project setup, package handoff, or consumer integration, start with [`agents/design-intelligence-orchestrator.md`](agents/design-intelligence-orchestrator.md) and the reusable skill at [`skills/internal/design-intelligence-orchestrator/SKILL.md`](skills/internal/design-intelligence-orchestrator/SKILL.md). The agent graph in [`agents/AGENT_GRAPH.md`](agents/AGENT_GRAPH.md) routes registry, integration, design, motion, accessibility, mobile, anti-slop, and harness review work.
+
+Run the local harness before handing off structural changes:
+
+```bash
+node harness/validate.mjs
+```
+
 ## How coding agents consume this repo
 
 See [`AGENTS.md`](AGENTS.md) — it is written to be loaded directly by Claude Code, Codex, Cursor, and Gemini CLI, and defines skill-selection and conflict rules (short version: **one design-opinion skill at a time**).
@@ -112,7 +126,7 @@ Rules for evaluating and handling those source licenses:
 
 ## Status
 
-**Registry v2 (2026-07-26): 23 entries** — 10 approved, 4 experimental, 6 candidate, 3 rejected.
+**Registry v2 (2026-08-20): 24 entries** — 11 approved, 4 experimental, 6 candidate, 3 rejected.
 
 - Round 1, 13 entries: [`evaluations/2026-07-26-initial-research.md`](evaluations/2026-07-26-initial-research.md)
 - Round 2, 10 motion entries + the first internal skills: [`evaluations/2026-07-26-motion-intelligence.md`](evaluations/2026-07-26-motion-intelligence.md)

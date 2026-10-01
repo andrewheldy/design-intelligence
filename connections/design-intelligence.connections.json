@@ -1,0 +1,28 @@
+{
+  "schema": "../schemas/connection-manifest.schema.json",
+  "updated": "2026-08-20",
+  "project": "design-intelligence",
+  "connections": [
+    {
+      "id": "google-drive",
+      "status": "available",
+      "purpose": "Create native Google Docs from verified local document artifacts and export brief materials when requested.",
+      "approval_required_for": ["sharing changes", "deleting files", "moving files between folders"],
+      "stores_secrets": false
+    },
+    {
+      "id": "sites",
+      "status": "optional",
+      "purpose": "Publish a built website when the user asks for hosting or a project contains .openai/hosting.json.",
+      "approval_required_for": ["public deployment"],
+      "stores_secrets": false
+    },
+    {
+      "id": "browser",
+      "status": "optional",
+      "purpose": "Verify frontend, motion, mobile, overflow, and accessibility behavior in a live browser.",
+      "approval_required_for": [],
+      "stores_secrets": false
+    }
+  ]
+}

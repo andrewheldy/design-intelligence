@@ -1,0 +1,6 @@
+{
+  "updated": "2026-08-20",
+  "source": "connections/design-intelligence.connections.json",
+  "required_for_this_package": ["google-drive"],
+  "optional_for_this_package": ["sites", "browser"]
+}

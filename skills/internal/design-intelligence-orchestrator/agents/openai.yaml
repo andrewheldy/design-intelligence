@@ -1,0 +1,8 @@
+interface:
+  display_name: "Design Intelligence Orchestrator"
+  short_description: "Set up governed design agents and harnesses."
+  brand_color: "#2F6F6D"
+  default_prompt: "Use $design-intelligence-orchestrator to set up the smallest complete Design Intelligence operating layer for this project."
+
+policy:
+  allow_implicit_invocation: true

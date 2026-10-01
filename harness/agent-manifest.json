@@ -1,0 +1,22 @@
+{
+  "updated": "2026-08-20",
+  "entry_agent": "design-intelligence-orchestrator",
+  "agents": [
+    { "id": "design-intelligence-orchestrator", "file": "agents/design-intelligence-orchestrator.md", "type": "director", "writes_code": false },
+    { "id": "registry-curator", "file": "agents/registry-curator.md", "type": "curator", "writes_code": false },
+    { "id": "integration-architect", "file": "agents/integration-architect.md", "type": "integrator", "writes_code": false },
+    { "id": "design-director", "file": "agents/design-director.md", "type": "director", "writes_code": false },
+    { "id": "design-engineer", "file": "agents/design-engineer.md", "type": "implementer", "writes_code": true },
+    { "id": "accessibility-reviewer", "file": "agents/accessibility-reviewer.md", "type": "reviewer", "writes_code": false },
+    { "id": "anti-slop-reviewer", "file": "agents/anti-slop-reviewer.md", "type": "reviewer", "writes_code": false },
+    { "id": "mobile-ux-reviewer", "file": "agents/mobile-ux-reviewer.md", "type": "reviewer", "writes_code": false },
+    { "id": "motion-reviewer", "file": "agents/motion-reviewer.md", "type": "reviewer", "writes_code": false },
+    { "id": "harness-verifier", "file": "agents/harness-verifier.md", "type": "verifier", "writes_code": false }
+  ],
+  "routes": [
+    { "when": "new skill or source changes", "agents": ["design-intelligence-orchestrator", "registry-curator", "harness-verifier"] },
+    { "when": "consumer project integration", "agents": ["design-intelligence-orchestrator", "integration-architect", "harness-verifier"] },
+    { "when": "product UI work", "agents": ["design-intelligence-orchestrator", "design-director", "design-engineer", "accessibility-reviewer", "mobile-ux-reviewer", "anti-slop-reviewer"] },
+    { "when": "motion work", "agents": ["design-intelligence-orchestrator", "design-director", "design-engineer", "motion-reviewer", "accessibility-reviewer"] }
+  ]
+}
